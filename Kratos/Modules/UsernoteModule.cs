@@ -10,23 +10,25 @@ using Kratos.Services;
 namespace Kratos.Modules
 {
     [Name("Usernote Module"), Group("un")]
+    [Summary("Keep notes on users.")]
     public class UsernoteModule : ModuleBase
     {
         private UsernoteService _service;
 
-        [Command("add"), Alias("+"),
-         Summary("Add a usernote."),
-         RequireCustomPermission("usernotes.add")]
-        public async Task Add(IUser user, [Remainder] string content)
+        [Command("add"), Alias("+")]
+        [Summary("Add a usernote")]
+        [RequireCustomPermission("usernotes.add")]
+        public async Task Add([Summary("User on which the note will be added")] IUser user,
+                              [Summary("Content of the note"), Remainder] string content)
         {
             await _service.AddNoteAsync(user.Id, Context.User.Id, (uint)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds, content);
             await ReplyAsync(":ok:");
         }
 
-        [Command("get"), Alias("<"),
-         Summary("Get all usernotes for a given user."),
-         RequireCustomPermission("usernotes.view")]
-        public async Task Get(IGuildUser user)
+        [Command("get"), Alias("<")]
+        [Summary("Get all usernotes for a given user")]
+        [RequireCustomPermission("usernotes.view")]
+        public async Task Get([Summary("User for which to get notes")] IGuildUser user)
         {
             var notes = await _service.GetNotesForUserAsync(user.Id);
             var name = user.Nickname == null
@@ -70,10 +72,10 @@ namespace Kratos.Modules
             //await ReplyAsync(response.ToString());
         }
 
-        [Command("get"), Alias("<"),
-         Summary("Get a single usernote by ID."),
-         RequireCustomPermission("usernotes.view")]
-        public async Task Get(int id)
+        [Command("get"), Alias("<")
+        [Summary("Get a single usernote by ID")]
+        [RequireCustomPermission("usernotes.view")]
+        public async Task Get([Summary("Note ID")] int id)
         {
             var note = await _service.GetNoteAsync(id);
             if (note == null)
@@ -122,10 +124,10 @@ namespace Kratos.Modules
             await ReplyAsync("", embed: responseEmbed);
         }
 
-        [Command("remove"), Alias("-"),
-         Summary("Remove a usernote."),
-         RequireCustomPermission("usernotes.remove")]
-        public async Task Remove(int id)
+        [Command("remove"), Alias("-")]
+        [Summary("Remove a usernote")]
+        [RequireCustomPermission("usernotes.remove")]
+        public async Task Remove([Summary("Note ID")] int id)
         {
             var result = await _service.RemoveNoteAsync(id);
             _service.DisposeContext();
@@ -134,10 +136,10 @@ namespace Kratos.Modules
                              : ":warning: Note not found.");
         }
 
-        [Command("clear"), Alias("--"),
-         Summary("Clear all usernotes for a given user."),
-         RequireCustomPermission("usernotes.remove")]
-        public async Task Clear(IGuildUser user)
+        [Command("clear"), Alias("--")]
+        [Summary("Clear all usernotes for a given user")]
+        [RequireCustomPermission("usernotes.remove")]
+        public async Task Clear([Summary("User on which to clear all notes")] IGuildUser user)
         {
             await _service.ClearNotesAsync(user.Id);
             _service.DisposeContext();

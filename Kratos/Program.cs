@@ -6,7 +6,6 @@ using System.Linq;
 using Discord;
 using Discord.WebSocket;
 using Discord.Commands;
-using Newtonsoft.Json;
 using Kratos.Services;
 using Kratos.Configs;
 
@@ -15,6 +14,8 @@ namespace Kratos
     class Program
     {
         static void Main(string[] args) => new Program().Start().GetAwaiter().GetResult();
+
+        public const string Version = "b1.0";
 
         private DiscordSocketClient _client;
         private BlacklistService _blacklist;
@@ -26,7 +27,7 @@ namespace Kratos
 
         public async Task Start()
         {
-            Console.Title = "Kratos (alpha)";
+            Console.Title = $"Kratos {Version}";
             #region Setting up DiscordClient
             _client = new DiscordSocketClient(new DiscordSocketConfig()
             {

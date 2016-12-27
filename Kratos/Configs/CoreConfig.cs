@@ -64,7 +64,7 @@ namespace Kratos.Configs
             {
                 using (var configWriter = new StreamWriter(configStream))
                 {
-                    string save = JsonConvert.SerializeObject(result, Formatting.Indented);
+                    var save = JsonConvert.SerializeObject(result, Formatting.Indented);
                     await configWriter.WriteAsync(save);
                 }
             }

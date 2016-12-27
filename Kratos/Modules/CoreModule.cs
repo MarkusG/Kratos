@@ -10,7 +10,8 @@ using Discord.Commands;
 
 namespace Kratos.Modules
 {
-    [Summary("Core Module")]
+    [Name("Core Module")]
+    [Summary("The bot's core commands.")]
     public class CoreModule : ModuleBase
     {
         private DiscordSocketClient _client;
@@ -40,7 +41,7 @@ namespace Kratos.Modules
         //            response.AppendLine($"- {c.Summary}");
         //            foreach (var p in c.Parameters)
         //            {
-        //                string optional = p.IsOptional ? "(Optional)" : null;
+        //                var optional = p.IsOptional ? "(Optional)" : null;
         //                response.AppendLine($"\t{p.Name} - {p.Summary} {optional}");
         //            }
         //            response.AppendLine();
