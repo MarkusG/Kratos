@@ -27,6 +27,7 @@ namespace Kratos.Modules
             switch (result.Type)
             {
                 case ResultType.Success:
+                    await _service.SaveConfigurationAsync();
                     await ReplyAsync(":ok: Permission added successfully.");
                     break;
                 case ResultType.Warning:
@@ -48,6 +49,7 @@ namespace Kratos.Modules
             switch (result.Type)
             {
                 case ResultType.Success:
+                    await _service.SaveConfigurationAsync();
                     await ReplyAsync(":ok: Permission removed successfully.");
                     break;
                 case ResultType.Warning:

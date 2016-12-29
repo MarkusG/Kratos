@@ -12,7 +12,7 @@ namespace Kratos.Services
     {
         private UsernoteContext _db;
 
-        public async Task AddNoteAsync(ulong userId, ulong authorId, uint timestamp, string content)
+        public async Task AddNoteAsync(ulong userId, ulong authorId, ulong timestamp, string content)
         {
             if (_db == null)
                 _db = new UsernoteContext();

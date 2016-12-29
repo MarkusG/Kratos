@@ -5,7 +5,6 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Discord;
-using Discord.Addons.InteractiveCommands;
 using Discord.Commands;
 using Kratos.Services;
 using Kratos.Configs;
@@ -18,7 +17,6 @@ namespace Kratos.Modules
     public class BlacklistModule : ModuleBase
     {
         private BlacklistService _service;
-        private CoreConfig _config;
 
         [Command("add"), Alias("+")]
         [Summary("Adds a phrase to the blacklist")]
@@ -29,6 +27,7 @@ namespace Kratos.Modules
             {
                 _service.Blacklist.Add(phrase);
                 await ReplyAsync($":ok: `{phrase}` has been added to the blacklist.");
+                await _service.SaveConfigurationAsync();
             }
             else
                 await ReplyAsync($":x: `{phrase}` already exists in blacklist.");
@@ -42,6 +41,7 @@ namespace Kratos.Modules
             if (_service.Blacklist.Contains(phrase))
             {
                 _service.Blacklist.Remove(phrase);
+                await _service.SaveConfigurationAsync();
                 await ReplyAsync($":ok: `{phrase}` has been removed from the blacklist.");
             }
             else
@@ -69,10 +69,13 @@ namespace Kratos.Modules
             if (!_service.IsEnabled)
             {
                 _service.Enable();
+                await _service.SaveConfigurationAsync();
                 await ReplyAsync(":ok:");
             }
             else
+            {
                 await ReplyAsync(":x: Blacklist already enabled");
+            }
         }
         
         [Command("disable"), Alias("d")]
@@ -83,67 +86,13 @@ namespace Kratos.Modules
             if (_service.IsEnabled)
             {
                 _service.Disable();
+                await _service.SaveConfigurationAsync();
                 await ReplyAsync(":ok:");
             }
             else
+            {
                 await ReplyAsync(":x: Blacklist not enabled");
-        }
-
-        [Command("setmuterole"), Alias("smr")]
-        [Summary("Sets the role to assign to users when they say a blacklisted word")]
-        [RequireCustomPermission("blacklist.manage")]
-        public async Task SetMuteRole([Summary("The role to give users upon violations of the word blacklist")] IRole role)
-        {
-            _service.MuteRoleId = role.Id;
-            await ReplyAsync($":ok: Mute role set to {role.Mention}");
-        }
-
-        [Command("addbypassrole"), Alias("abp")]
-        [Summary("Adds a role for which the bot will ignore blacklist violations")]
-        [RequireCustomPermission("blacklist.manage")]
-        public async Task AddBypassRole([Summary("The role to add to the ignore list")] IRole role)
-        {
-            if (!_service.BypassIds.Contains(role.Id))
-            {
-                _service.BypassIds.Add(role.Id);
-                await ReplyAsync($":ok: Will now ignore blacklist violations from {role.Mention}");
             }
-            else
-                await ReplyAsync(":x: That role is already in the bypass list.");
-        }
-
-        [Command("removebypassrole"), Alias("rbp")]
-        [Summary("Removes a role for which the bot will ignore blacklist violations")]
-        [RequireCustomPermission("blacklist.manage")]
-        public async Task RemoveBypassRole([Summary("The role to remove from the ignore list")] IRole role)
-        {
-            if (_service.BypassIds.Contains(role.Id))
-            {
-                _service.BypassIds.Remove(role.Id);
-                await ReplyAsync($":ok: Will no longer ignore blacklist violations from {role.Mention}");
-            }
-            else
-                await ReplyAsync(":x: That role is not on the bypass list.");
-        }
-
-        [Command("listbypassroles"), Alias("lbp")]
-        [Summary("Lists all the roles for which the bot will ignore blacklist violations")]
-        [RequireCustomPermission("blacklist.view")]
-        public async Task ListBypassRoles()
-        {
-            StringBuilder response = new StringBuilder("**BYPASS ROLES:**\n");
-            foreach (ulong i in _service.BypassIds)
-                response.AppendLine(Context.Guild.GetRole(i).Name);
-            await ReplyAsync(response.ToString());
-        }
-
-        [Command("setlogchannel"), Alias("slc")]
-        [Summary("Sets the bot's log channel")]
-        [RequireCustomPermission("blacklist.manage")]
-        public async Task SetLogChannel([Summary("The channel in which the bot will log its actions")] ITextChannel channel)
-        {
-            _service.LogChannelId = channel.Id;
-            await ReplyAsync($":ok: Log channel set to #{channel.Name}");
         }
 
         [Command("mutetime"), Alias("mt")]
@@ -151,8 +100,20 @@ namespace Kratos.Modules
         [RequireCustomPermission("blacklist.manage")]
         public async Task MuteTime(TimeSpan time)
         {
-            _service.MuteTime = (int)time.TotalMilliseconds;
+            _service.MuteTime = (int)time.TotalSeconds;
+            await _service.SaveConfigurationAsync();
             await ReplyAsync(":ok:");
+        }
+
+        [Command("status")]
+        [Summary("Gets current information for the blacklist")]
+        [RequireCustomPermission("blacklist.view")]
+        public async Task GetStatus()
+        {
+            var response = new StringBuilder("**Blacklist Status:**\n");
+            response.AppendLine($"Enabled: {_service.IsEnabled}");
+            response.AppendLine($"Mute time: {_service.MuteTime}");
+            await ReplyAsync(response.ToString());
         }
 
         [Command("saveconfig"), Alias("sc")]
@@ -173,9 +134,8 @@ namespace Kratos.Modules
             await ReplyAsync(success ? ":ok:" : ":x: Failed to load config. Please configure the blacklist and save the config.");
         }
 
-        public BlacklistModule(BlacklistService bm, CoreConfig c)
+        public BlacklistModule(BlacklistService bm)
         {
-            _config = c;
             _service = bm;
         }
     }

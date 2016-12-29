@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -107,6 +108,19 @@ namespace Kratos.Services
                                            : ResultType.Warning,
                 Info = $"{successes.Count} permissions removed sucessfully. {warnings} were not held by the role."
             };
+        }
+
+        public void AddPermissions(Assembly assembly)
+        {
+            var permissions = assembly.GetTypes()
+              .SelectMany(x => x.GetMethods())
+              .Where(x => x.GetCustomAttributes<Preconditions.RequireCustomPermissionAttribute>().Count() > 0)
+              .Select(x => x.GetCustomAttribute<Preconditions.RequireCustomPermissionAttribute>().Permission);
+            foreach (var p in permissions)
+            {
+                if (!AllPermissions.Contains(p))
+                    AllPermissions.Add(p);
+            }
         }
 
         public async Task<bool> SaveConfigurationAsync()

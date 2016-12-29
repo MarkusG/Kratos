@@ -21,7 +21,7 @@ namespace Kratos.Modules
         public async Task Add([Summary("User on which the note will be added")] IUser user,
                               [Summary("Content of the note"), Remainder] string content)
         {
-            await _service.AddNoteAsync(user.Id, Context.User.Id, (uint)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds, content);
+            await _service.AddNoteAsync(user.Id, Context.User.Id, (ulong)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds, content);
             await ReplyAsync(":ok:");
         }
 
@@ -72,7 +72,7 @@ namespace Kratos.Modules
             //await ReplyAsync(response.ToString());
         }
 
-        [Command("get"), Alias("<")
+        [Command("get"), Alias("<")]
         [Summary("Get a single usernote by ID")]
         [RequireCustomPermission("usernotes.view")]
         public async Task Get([Summary("Note ID")] int id)
