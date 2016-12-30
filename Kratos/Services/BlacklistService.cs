@@ -15,21 +15,14 @@ namespace Kratos.Services
     public class BlacklistService
     {
         private DiscordSocketClient _client;
+        private UnpunishService _unpunish;
+        private LogService _log;
+        private RecordService _records;
+        private CoreConfig _config;
 
-        public ulong MuteRoleId { get; set; }
-        public ulong LogChannelId { get; set; }
         public List<string> Blacklist { get; set; }
-        public List<ulong> BypassIds { get; set; }
         public int MuteTime { get; set; }
-        public bool IsEnabled { get; set; }
-
-        public BlacklistService(DiscordSocketClient c)
-        {
-            _client = c;
-            Blacklist = new List<string>();
-            BypassIds = new List<ulong>();
-            MuteTime = 360000;
-        }
+        public bool IsEnabled { get; private set; }
 
         public void Enable()
         {
@@ -46,12 +39,9 @@ namespace Kratos.Services
         {
             var config = new BlacklistConfig
             {
-                MuteRoleId = MuteRoleId,
-                LogChannelId = LogChannelId,
-                MuteTimeInMiliseconds = MuteTime,
+                MuteTimeInSeconds = MuteTime,
                 Enabled = IsEnabled,
                 Blacklist = this.Blacklist.ToArray(),
-                BypassIds = this.BypassIds.ToArray()
             };
 
             var serializedConfig = JsonConvert.SerializeObject(config, Formatting.Indented);
@@ -74,16 +64,13 @@ namespace Kratos.Services
             {
                 using (var configReader = new StreamReader(configStream))
                 {
-                    var deserializedConfig = await configReader.ReadToEndAsync();
-                    var config = JsonConvert.DeserializeObject<BlacklistConfig>(deserializedConfig);
+                    var serializedConfig = await configReader.ReadToEndAsync();
+                    var config = JsonConvert.DeserializeObject<BlacklistConfig>(serializedConfig);
                     if (config == null) return false;
 
-                    MuteRoleId = config.MuteRoleId;
-                    LogChannelId = config.LogChannelId;
-                    MuteTime = config.MuteTimeInMiliseconds;
+                    MuteTime = config.MuteTimeInSeconds;
                     IsEnabled = config.Enabled;
                     Blacklist = config.Blacklist.ToList();
-                    BypassIds = config.BypassIds.ToList();
 
                     return true;
                 }
@@ -97,26 +84,35 @@ namespace Kratos.Services
             if (author == null) return;
             var guild = (m.Channel as IGuildChannel)?.Guild;
             if (guild == null) return;
-            if (author.RoleIds.Any(x => BypassIds.Contains(x))) return;
+            if (author.RoleIds.Any(x => _config.BypassIds.Contains(x))) return;
             if (!Blacklist.Any(x => m.Content.Contains(x))) return;
 
-            var logChannel = await guild.GetChannelAsync(LogChannelId) as ITextChannel;
-            var muteRole = guild.GetRole(MuteRoleId);
+            var muteRole = guild.GetRole(_config.MuteRoleId);
             await m.DeleteAsync();
+            await author.AddRolesAsync(muteRole);
+
             var dmChannel = await author.GetDMChannelAsync() ?? await author.CreateDMChannelAsync();
-            await dmChannel.SendMessageAsync($"You've been muted for violating the world blacklist: `{m.Content}`");
-            if (logChannel != null)
-                await logChannel.SendMessageAsync($"I automatically muted **{author.Nickname ?? author.Username}** for violating the word blacklist in #{m.Channel.Name}: `{m.Content}`");
+            await dmChannel.SendMessageAsync($"You've been muted for {TimeSpan.FromSeconds(MuteTime)} for violating the world blacklist: `{m.Content}`");
+            var name = author.Nickname == null
+                ? author.Username
+                : $"{author.Username} (nickname: {author.Nickname})";
+            await _log.LogModMessage($"I automatically muted {name} for violating the word blacklist in {(m.Channel as ITextChannel).Mention}: `{m.Content}`");
+            var timestamp = (ulong)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
+            var unmuteAt = (ulong)DateTime.UtcNow.Add(TimeSpan.FromSeconds(MuteTime)).Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
+            var mute = await _records.AddMuteAsync(guild.Id, author.Id, 0, timestamp, unmuteAt, "N/A (BLACKLIST AUTO-MUTE)");
+            _records.DisposeContext();
+            _unpunish.Mutes.Add(mute);
+        }
 
-            var workThread = new Thread(async (o) =>
-            {
-                var target = o as IGuildUser;
-                await target.AddRolesAsync(muteRole);
-                await Task.Delay(MuteTime);
-                await target.RemoveRolesAsync(muteRole);
-            });
-
-            workThread.Start(author);
+        public BlacklistService(DiscordSocketClient c, UnpunishService u, RecordService r, LogService l, CoreConfig config)
+        {
+            _client = c;
+            _unpunish = u;
+            _records = r;
+            _log = l;
+            _config = config;
+            Blacklist = new List<string>();
+            MuteTime = 3600;
         }
     }
 }

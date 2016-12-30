@@ -2,11 +2,9 @@
 using System.Threading.Tasks;
 using System.IO;
 using System.Reflection;
-using System.Linq;
 using Discord;
 using Discord.WebSocket;
 using Discord.Commands;
-using Newtonsoft.Json;
 using Kratos.Services;
 using Kratos.Configs;
 
@@ -16,22 +14,29 @@ namespace Kratos
     {
         static void Main(string[] args) => new Program().Start().GetAwaiter().GetResult();
 
+        public const string Version = "b1.1";
+        #region Private fields
         private DiscordSocketClient _client;
         private BlacklistService _blacklist;
         private PermissionsService _permissions;
         private UsernoteService _usernotes;
+        private RecordService _records;
+        private UnpunishService _unpunish;
+        private LogService _log;
+        private SlowmodeService _slowmode;
+        private RatelimitService _ratelimit;
         private CommandHandler _commands;
         private DependencyMap _map;
         private CoreConfig _config;
-
+        #endregion
         public async Task Start()
         {
-            Console.Title = "Kratos (alpha)";
+            Console.Title = $"Kratos {Version}";
             #region Setting up DiscordClient
             _client = new DiscordSocketClient(new DiscordSocketConfig()
             {
-                LogLevel = LogSeverity.Info,
-                MessageCacheSize = 0
+                LogLevel = LogSeverity.Verbose,
+                MessageCacheSize = 100
             });
 
             _client.Log += Log;
@@ -41,35 +46,47 @@ namespace Kratos
                 Directory.CreateDirectory("config");
 
             if (File.Exists(@"config\core.json"))
-                _config = await CoreConfig.UseCurrent();
+                _config = await CoreConfig.UseCurrentAsync();
             else
-                _config = await CoreConfig.CreateNew();
+                _config = await CoreConfig.CreateNewAsync();
             #endregion
             #region Setting up services
-            _blacklist = new BlacklistService(_client);
+            _usernotes = new UsernoteService();
+
+            _records = new RecordService();
+
+            _log = new LogService(_client);
+            await _log.LoadConfigurationAsync();
+
+            _slowmode = new SlowmodeService(_client, _log, _config);
+
+            _unpunish = new UnpunishService(_client, _blacklist, _log, _records, _config);
+            await _unpunish.GetRecordsAsync();
+
+            _ratelimit = new RatelimitService(_client, _config, _records, _unpunish, _log);
+            await _ratelimit.LoadConfigurationAsync();
+            if (_ratelimit.IsEnabled)
+                _ratelimit.Enable(_ratelimit.Limit);
+
+            _blacklist = new BlacklistService(_client, _unpunish, _records, _log, _config);
             await _blacklist.LoadConfigurationAsync();
-            _blacklist.Enable();
+            if (_blacklist.IsEnabled)
+                _blacklist.Enable();
 
             _permissions = new PermissionsService();
-            var permissions = Assembly.GetEntryAssembly().GetTypes()
-                          .SelectMany(x => x.GetMethods())
-                          .Where(x => x.GetCustomAttributes<Preconditions.RequireCustomPermissionAttribute>().Count() > 0)
-                          .Select(x => x.GetCustomAttribute<Preconditions.RequireCustomPermissionAttribute>().Permission);
-            foreach (var p in permissions)
-            {
-                if (!_permissions.AllPermissions.Contains(p))
-                    _permissions.AllPermissions.Add(p);
-            }
-
+            _permissions.AddPermissions(Assembly.GetEntryAssembly());
             await _permissions.LoadConfigurationAsync();
-
-            _usernotes = new UsernoteService();
             #endregion
             #region Adding dependencies to map
             _map = new DependencyMap();
             _map.Add(_blacklist);
             _map.Add(_permissions);
             _map.Add(_usernotes);
+            _map.Add(_records);
+            _map.Add(_unpunish);
+            _map.Add(_log);
+            _map.Add(_slowmode);
+            _map.Add(_ratelimit);
             _map.Add(_client);
             _map.Add(_config);
             #endregion
@@ -80,6 +97,9 @@ namespace Kratos
             #region Connect to Discord
             await _client.LoginAsync(TokenType.Bot, _config.Token);
             await _client.ConnectAsync();
+            #endregion
+            #region Start unpunisher loop
+            await _unpunish.StartAsync();
             #endregion
             await Task.Delay(-1);
         }
@@ -93,7 +113,7 @@ namespace Kratos
                 case LogSeverity.Critical: Console.ForegroundColor = ConsoleColor.DarkRed; break;
             }
 
-            Console.WriteLine($"[{DateTime.Now}] [{m.Severity}] [{m.Source}] {m.Message}");
+            Console.WriteLine(m.ToString());
             if (m.Exception != null)
                 Console.WriteLine(m.Exception);
             Console.ForegroundColor = ConsoleColor.Gray;

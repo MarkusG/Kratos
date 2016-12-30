@@ -5,16 +5,23 @@ using System.Text;
 using System.IO;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using Discord;
 using Discord.WebSocket;
 using Discord.Commands;
+using Kratos.Services;
+using Kratos.Configs;
+using Kratos.Preconditions;
 
 namespace Kratos.Modules
 {
-    [Summary("Core Module")]
+    [Name("Core Module")]
+    [Summary("The bot's core commands.")]
     public class CoreModule : ModuleBase
     {
         private DiscordSocketClient _client;
         private CommandService _commands;
+        private CoreConfig _config;
+        private BlacklistService _blacklist;
 
         //[Command("help"), Summary("Displays this help message")]
         //public async Task Help()
@@ -40,7 +47,7 @@ namespace Kratos.Modules
         //            response.AppendLine($"- {c.Summary}");
         //            foreach (var p in c.Parameters)
         //            {
-        //                string optional = p.IsOptional ? "(Optional)" : null;
+        //                var optional = p.IsOptional ? "(Optional)" : null;
         //                response.AppendLine($"\t{p.Name} - {p.Summary} {optional}");
         //            }
         //            response.AppendLine();
@@ -60,10 +67,62 @@ namespace Kratos.Modules
         //    await Context.Channel.SendFileAsync(@"resources\help.txt");
         //}
 
-        [Command("ping"), Summary("Returns \"Pong!\"")]
+        [Command("ping")]
+        [Summary("Returns \"Pong!\"")]
         public async Task Ping()
         {
             await ReplyAsync($"Pong! My latency is currently {_client.Latency}ms.");
+        }
+
+        [Command("setmuterole"), Alias("smr")]
+        [Summary("Sets the mute role")]
+        [RequireCustomPermission("core.manage")]
+        public async Task SetMuteRole(IRole role)
+        {
+            _config.MuteRoleId = role.Id;
+            await _config.SaveAsync();
+            await ReplyAsync(":ok:");
+        }
+
+        [Command("addbypassrole"), Alias("abp")]
+        [Summary("Adds a role for which the bot will ignore active protection")]
+        [RequireCustomPermission("blacklist.manage")]
+        public async Task AddBypassRole([Summary("The role to add to the ignore list")] IRole role)
+        {
+            if (!_config.BypassIds.Contains(role.Id))
+            {
+                _config.BypassIds.Add(role.Id);
+                await _config.SaveAsync();
+                await ReplyAsync($":ok: Will now ignore active protection for {role.Mention}");
+            }
+            else
+                await ReplyAsync(":x: That role is already in the bypass list.");
+        }
+
+        [Command("removebypassrole"), Alias("rbp")]
+        [Summary("Removes a role for which the bot will ignore active protection")]
+        [RequireCustomPermission("blacklist.manage")]
+        public async Task RemoveBypassRole([Summary("The role to remove from the ignore list")] IRole role)
+        {
+            if (_config.BypassIds.Contains(role.Id))
+            {
+                _config.BypassIds.Remove(role.Id);
+                await _config.SaveAsync();
+                await ReplyAsync($":ok: Will no longer ignore active protection for {role.Mention}");
+            }
+            else
+                await ReplyAsync(":x: That role is not on the bypass list.");
+        }
+
+        [Command("listbypassroles"), Alias("lbp")]
+        [Summary("Lists all the roles for which the bot will ignore active protection")]
+        [RequireCustomPermission("blacklist.view")]
+        public async Task ListBypassRoles()
+        {
+            StringBuilder response = new StringBuilder("**BYPASS ROLES:**\n");
+            foreach (var i in _config.BypassIds)
+                response.AppendLine(Context.Guild.GetRole(i).Name);
+            await ReplyAsync(response.ToString());
         }
 
         //[Command("edituser"), Summary("Edits the bot's account")]
@@ -99,7 +158,8 @@ namespace Kratos.Modules
 
         //}
 
-        [Command("info"), Summary("Returns general information about the bot")]
+        [Command("info")]
+        [Summary("Returns general information about the bot")]
         public async Task Info()
         {
             DateTime startTime = Process.GetCurrentProcess().StartTime;
@@ -110,10 +170,12 @@ namespace Kratos.Modules
             await ReplyAsync(response.ToString() + "```");
         }
 
-        public CoreModule(DiscordSocketClient c, CommandService s)
+        public CoreModule(DiscordSocketClient c, CommandService s, BlacklistService b, CoreConfig config)
         {
             _client = c;
             _commands = s;
+            _blacklist = b;
+            _config = config;
         }
     }
 }

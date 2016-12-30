@@ -19,7 +19,7 @@ namespace Kratos.Preconditions
             Permission = permission;
         }
 
-        public async override Task<PreconditionResult> CheckPermissions(CommandContext context, CommandInfo command, IDependencyMap map)
+        public async override Task<PreconditionResult> CheckPermissions(ICommandContext context, CommandInfo command, IDependencyMap map)
         {
             var service = map.Get<PermissionsService>();
             var config = map.Get<CoreConfig>();
