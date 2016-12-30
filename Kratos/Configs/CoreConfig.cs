@@ -17,6 +17,8 @@ namespace Kratos.Configs
         public string Prefix { get; set; }
         public bool MentionPrefix { get; set; }
         public ulong MasterId { get; set; }
+        public ulong MuteRoleId { get; set; }
+        public List<ulong> BypassIds { get; set; }
 
         public bool MentionPrefixEnabled(SocketUserMessage m, DiscordSocketClient c, ref int ap)
         {
@@ -25,7 +27,19 @@ namespace Kratos.Configs
             return m.HasMentionPrefix(c.CurrentUser, ref ap);
         }
 
-        public static async Task<CoreConfig> UseCurrent()
+        public async Task SaveAsync()
+        {
+            using (var configStream = File.OpenWrite(@"config\core.json"))
+            {
+                using (var configWriter = new StreamWriter(configStream))
+                {
+                    var save = JsonConvert.SerializeObject(this);
+                    await configWriter.WriteAsync(save);
+                }
+            }
+        }
+
+        public static async Task<CoreConfig> UseCurrentAsync()
         {
             CoreConfig result;
             using (var configStream = File.OpenRead(@"config\core.json"))
@@ -35,12 +49,14 @@ namespace Kratos.Configs
                     var deserializedConfig = await configReader.ReadToEndAsync();
 
                     result = JsonConvert.DeserializeObject<CoreConfig>(deserializedConfig);
+                    if (result.BypassIds == null)
+                        result.BypassIds = new List<ulong>();
                     return result;
                 }
             }
         }
 
-        public static async Task<CoreConfig> CreateNew()
+        public static async Task<CoreConfig> CreateNewAsync()
         {
             CoreConfig result;
             result = new CoreConfig();
@@ -51,8 +67,11 @@ namespace Kratos.Configs
             result.Prefix = Console.ReadLine();
             Console.WriteLine("Enter the master ID (will bypass all permission checks) (this will probably be your ID): ");
             result.MasterId = ulong.Parse(Console.ReadLine());
-            Console.WriteLine("Allow mentioning yourself as a substitute for a command prefix? (y/n, leave blank for no): ");
+            Console.WriteLine("Enter the mute role ID: ");
+            result.MuteRoleId = ulong.Parse(Console.ReadLine());
+            Console.WriteLine("Allow mentioning the bot as a substitute for a command prefix? (y/n, leave blank for no): ");
             char input = Console.ReadLine().ToLower()[0];
+            result.BypassIds = new List<ulong>();
             switch (input)
             {
                 case 'y': result.MentionPrefix = true; break;

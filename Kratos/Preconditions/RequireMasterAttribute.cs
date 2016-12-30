@@ -10,7 +10,7 @@ namespace Kratos.Preconditions
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
     class RequireMasterAttribute : PreconditionAttribute
     {
-        public async override Task<PreconditionResult> CheckPermissions(CommandContext context, CommandInfo command, IDependencyMap map)
+        public async override Task<PreconditionResult> CheckPermissions(ICommandContext context, CommandInfo command, IDependencyMap map)
         {
             var config = map.Get<CoreConfig>();
 
