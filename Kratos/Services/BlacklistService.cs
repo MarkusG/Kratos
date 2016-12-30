@@ -46,7 +46,7 @@ namespace Kratos.Services
 
             var serializedConfig = JsonConvert.SerializeObject(config, Formatting.Indented);
 
-            using (var configStream = File.OpenWrite(@"config\blacklist.json"))
+            using (var configStream = File.OpenWrite(@"\config\blacklist.json"))
             {
                 using (var configWriter = new StreamWriter(configStream))
                 {
@@ -58,9 +58,9 @@ namespace Kratos.Services
 
         public async Task<bool> LoadConfigurationAsync()
         {
-            if (!File.Exists(@"config\blacklist.json")) return false;
+            if (!File.Exists(@"\config\blacklist.json")) return false;
 
-            using (var configStream = File.OpenRead(@"config\blacklist.json"))
+            using (var configStream = File.OpenRead(@"\config\blacklist.json"))
             {
                 using (var configReader = new StreamReader(configStream))
                 {

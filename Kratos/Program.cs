@@ -14,7 +14,7 @@ namespace Kratos
     {
         static void Main(string[] args) => new Program().Start().GetAwaiter().GetResult();
 
-        public const string Version = "b1.1";
+        public const string Version = "b1.1.1";
         #region Private fields
         private DiscordSocketClient _client;
         private BlacklistService _blacklist;
@@ -45,7 +45,7 @@ namespace Kratos
             if (!Directory.Exists("config"))
                 Directory.CreateDirectory("config");
 
-            if (File.Exists(@"config\core.json"))
+            if (File.Exists(@"\config\core.json"))
                 _config = await CoreConfig.UseCurrentAsync();
             else
                 _config = await CoreConfig.CreateNewAsync();

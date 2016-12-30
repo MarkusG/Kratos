@@ -11,7 +11,7 @@ using Kratos.Configs;
 
 namespace Kratos.Modules
 {
-    [Name("Moderation Module")]
+    [Name("Moderation Module"), Group("mod")]
     [Summary("A group of moderation commands")]
     public class ModerationModule : ModuleBase
     {

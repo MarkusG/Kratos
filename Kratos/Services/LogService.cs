@@ -42,7 +42,7 @@ namespace Kratos.Services
 
             var serializedConfig = JsonConvert.SerializeObject(config);
 
-            using (var configStream = File.OpenWrite(@"config\log.json"))
+            using (var configStream = File.OpenWrite(@"\config\log.json"))
             {
                 using (var configWriter = new StreamWriter(configStream))
                 {
@@ -54,9 +54,9 @@ namespace Kratos.Services
 
         public async Task<bool> LoadConfigurationAsync()
         {
-            if (!File.Exists(@"config\log.json")) return false;
+            if (!File.Exists(@"\config\log.json")) return false;
 
-            using (var configStream = File.OpenRead(@"config\log.json"))
+            using (var configStream = File.OpenRead(@"\config\log.json"))
             {
                 using (var configReader = new StreamReader(configStream))
                 {

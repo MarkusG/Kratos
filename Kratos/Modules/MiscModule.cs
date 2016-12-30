@@ -8,7 +8,7 @@ using Discord.Commands;
 
 namespace Kratos.Modules
 {
-    [Name("Miscellaneous Module")]
+    [Name("Miscellaneous Module"), Group("misc")]
     [Summary("A group of miscellaneous commands.")]
     public class MiscModule : ModuleBase
     {
