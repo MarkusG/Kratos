@@ -48,7 +48,7 @@ namespace Kratos.Services
 
             var serializedConfig = JsonConvert.SerializeObject(config);
 
-            using (var configStream = File.OpenWrite(@"config\ratelimit.json"))
+            using (var configStream = File.OpenWrite(Program.ConfigDirectory + @"ratelimit.json"))
             {
                 using (var configWriter = new StreamWriter(configStream))
                 {
@@ -60,9 +60,9 @@ namespace Kratos.Services
 
         public async Task<bool> LoadConfigurationAsync()
         {
-            if (!File.Exists(@"config\ratelimit.json")) return false;
+            if (!File.Exists(Program.ConfigDirectory + @"ratelimit.json")) return false;
 
-            using (var configStream = File.OpenRead(@"config\ratelimit.json"))
+            using (var configStream = File.OpenRead(Program.ConfigDirectory + @"ratelimit.json"))
             {
                 using (var configReader = new StreamReader(configStream))
                 {
@@ -109,7 +109,7 @@ namespace Kratos.Services
                 var name = author.Nickname == null
                     ? author.Username
                     : $"{author.Username} (nickname: {author.Nickname})";
-                await _log.LogModMessage($"I automatically muted {name} for ratelimiting in {(m.Channel as ITextChannel).Mention}: `{m.Content}`");
+                await _log.LogModMessageAsync($"I automatically muted {name} for ratelimiting in {(m.Channel as ITextChannel).Mention}: `{m.Content}`");
                 var timestamp = (ulong)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
                 var unmuteAt = (ulong)DateTime.UtcNow.Add(TimeSpan.FromSeconds(MuteTime)).Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
                 var mute = await _records.AddMuteAsync(author.Guild.Id, author.Id, 0, timestamp, unmuteAt, "N/A (RATELIMIT AUTO-MUTE)");

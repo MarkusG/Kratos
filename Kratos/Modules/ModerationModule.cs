@@ -11,7 +11,7 @@ using Kratos.Configs;
 
 namespace Kratos.Modules
 {
-    [Name("Moderation Module")]
+    [Name("Moderation Module"), Group("mod")]
     [Summary("A group of moderation commands")]
     public class ModerationModule : ModuleBase
     {
@@ -38,9 +38,9 @@ namespace Kratos.Modules
                                                .OrderBy(x => x.Position)
                                                .First();
 
-            if (usersHighestRole.Position > authorsHighestRole.Position)
+            if (usersHighestRole.Position >= authorsHighestRole.Position)
             {
-                await ReplyAsync(":x: You cannot ban someone above you in the role hierarchy.");
+                await ReplyAsync(":x: You cannot ban someone above or equal to you in the role hierarchy.");
                 return;
             }
 
@@ -51,7 +51,7 @@ namespace Kratos.Modules
             var timestamp = (ulong)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
             await _records.AddPermaBanAsync(Context.Guild.Id, user.Id, name, Context.User.Id, timestamp, reason);
             _records.DisposeContext();
-            await _log.LogModMessage($"{author.Nickname ?? author.Username} permabanned {name} for `{reason}`");
+            await _log.LogModMessageAsync($"{author.Nickname ?? author.Username} permabanned {name} for `{reason}`");
             await ReplyAsync(":ok:");
         }
 
@@ -71,7 +71,7 @@ namespace Kratos.Modules
             await _records.AddPermaBanAsync(Context.Guild.Id, id, "N/A (FORCEBANNED)", Context.User.Id, (ulong)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds, reason);
             _records.DisposeContext();
             var author = Context.User as IGuildUser;
-            await _log.LogModMessage($"{author.Nickname ?? author.Username} forcebanned {id} for `{reason}`");
+            await _log.LogModMessageAsync($"{author.Nickname ?? author.Username} forcebanned {id} for `{reason}`");
             await ReplyAsync(":ok:");
         }
 
@@ -94,7 +94,7 @@ namespace Kratos.Modules
         //    }
         //    _records.DisposeContext();
         //    var author = Context.User as IGuildUser;
-        //    await _log.LogModMessage($"{author.Nickname ?? author.Username} forcebanned {string.Join(", ", ids)} for `{reason}`");
+        //    await _log.LogModMessageAsync($"{author.Nickname ?? author.Username} forcebanned {string.Join(", ", ids)} for `{reason}`");
         //    await ReplyAsync(":ok:");
         //}
 
@@ -114,9 +114,9 @@ namespace Kratos.Modules
                                                .OrderBy(x => x.Position)
                                                .First();
 
-            if (usersHighestRole.Position > authorsHighestRole.Position)
+            if (usersHighestRole.Position >= authorsHighestRole.Position)
             {
-                await ReplyAsync(":x: You cannot ban someone above you in the role hierarchy.");
+                await ReplyAsync(":x: You cannot ban someone above or equal to you in the role hierarchy.");
                 return;
             }
 
@@ -129,7 +129,7 @@ namespace Kratos.Modules
             var ban = await _records.AddTempBanAsync(Context.Guild.Id, user.Id, name, Context.User.Id, timestamp, unbanAt, reason);
             _records.DisposeContext();
             _unpunish.Bans.Add(ban);
-            await _log.LogModMessage($"{author.Nickname ?? author.Username} temp banned {user.Username} for {time} for `{reason}`");
+            await _log.LogModMessageAsync($"{author.Nickname ?? author.Username} temp banned {user.Username} for {time} for `{reason}`");
             await ReplyAsync(":ok:");
         }
 
@@ -148,9 +148,9 @@ namespace Kratos.Modules
                                                .OrderBy(x => x.Position)
                                                .First();
 
-            if (usersHighestRole.Position > authorsHighestRole.Position)
+            if (usersHighestRole.Position >= authorsHighestRole.Position)
             {
-                await ReplyAsync(":x: You cannot softban someone above you in the role hierarchy.");
+                await ReplyAsync(":x: You cannot softban someone above or equal to you in the role hierarchy.");
                 return;
             }
 
@@ -162,10 +162,11 @@ namespace Kratos.Modules
             var timestamp = (ulong)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
             await _records.AddSoftBanAsync(Context.Guild.Id, user.Id, name, Context.User.Id, timestamp, reason);
             _records.DisposeContext();
-            await _log.LogModMessage($"{author.Nickname ?? author.Username} softbanned {name} for `{reason}`");
+            await _log.LogModMessageAsync($"{author.Nickname ?? author.Username} softbanned {name} for `{reason}`");
             await ReplyAsync(":ok:");
         }
         #endregion
+
         [Command("mute")]
         [Summary("Mutes a user for a given amount of time.")]
         [RequireCustomPermission("mod.mute")]
@@ -181,9 +182,9 @@ namespace Kratos.Modules
                                                .OrderByDescending(x => x.Position)
                                                .First();
 
-            if (usersHighestRole.Position > authorsHighestRole.Position)
+            if (usersHighestRole.Position >= authorsHighestRole.Position)
             {
-                await ReplyAsync(":x: You cannot mute someone above you in the role hierarchy.");
+                await ReplyAsync(":x: You cannot mute someone above or equal to you in the role hierarchy.");
                 return;
             }
 
@@ -211,7 +212,7 @@ namespace Kratos.Modules
             var messagesToDelete = await channel.GetMessagesAsync(num + 1).Flatten();
             await channel.DeleteMessagesAsync(messagesToDelete);
             var author = Context.User as IGuildUser;
-            await _log.LogModMessage($"{author.Nickname ?? author.Username} cleaned {num} messages in {(Context.Channel as ITextChannel).Mention}");
+            await _log.LogModMessageAsync($"{author.Nickname ?? author.Username} cleaned {num} messages in {(Context.Channel as ITextChannel).Mention}");
         }
 
         [Command("slowmode"), Alias("sm")]

@@ -54,7 +54,7 @@ namespace Kratos.Services
                     var name = author.Nickname == null
                         ? author.Username
                         : $"{author.Username} (nickname: {author.Nickname})";
-                    await _log.LogModMessage($"Automatically deleted {name}'s message in {(m.Channel as ITextChannel).Mention} for violating slowmode: `{m.Content}`");
+                    await _log.LogModMessageAsync($"Automatically deleted {name}'s message in {(m.Channel as ITextChannel).Mention} for violating slowmode: `{m.Content}`");
                 }
             }
             else

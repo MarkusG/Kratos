@@ -29,7 +29,7 @@ namespace Kratos.Configs
 
         public async Task SaveAsync()
         {
-            using (var configStream = File.OpenWrite(@"config\core.json"))
+            using (var configStream = File.OpenWrite(Program.ConfigDirectory + @"core.json"))
             {
                 using (var configWriter = new StreamWriter(configStream))
                 {
@@ -42,7 +42,7 @@ namespace Kratos.Configs
         public static async Task<CoreConfig> UseCurrentAsync()
         {
             CoreConfig result;
-            using (var configStream = File.OpenRead(@"config\core.json"))
+            using (var configStream = File.OpenRead(Program.ConfigDirectory + @"core.json"))
             {
                 using (var configReader = new StreamReader(configStream))
                 {
@@ -79,7 +79,9 @@ namespace Kratos.Configs
                 default: result.MentionPrefix = false; break;
             }
 
-            using (var configStream = File.Create(@"config\core.json"))
+            string directory = Directory.GetCurrentDirectory();
+
+            using (var configStream = File.Create(Program.ConfigDirectory + @"core.json"))
             {
                 using (var configWriter = new StreamWriter(configStream))
                 {

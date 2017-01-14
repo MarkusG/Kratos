@@ -17,7 +17,7 @@ namespace Kratos.Data
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlite("Data Source=Kratos.sqlite;");
+            optionsBuilder.UseSqlite("Data Source=Records.sqlite;");
         }
     }
 }

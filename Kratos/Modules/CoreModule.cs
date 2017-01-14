@@ -14,7 +14,7 @@ using Kratos.Preconditions;
 
 namespace Kratos.Modules
 {
-    [Name("Core Module")]
+    [Name("Core Module"), Group("core")]
     [Summary("The bot's core commands.")]
     public class CoreModule : ModuleBase
     {
