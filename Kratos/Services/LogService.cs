@@ -93,13 +93,13 @@ namespace Kratos.Services
 
         public void EnableNickChangeLogging()
         {
-            _client.UserUpdated += _client_UserUpdated_NickChange;
+            _client.GuildMemberUpdated += _client_GuildMemberUpdated_NickChange;
             NickChangesLogged = true;
         }
 
         public void DisableNickChangeLogging()
         {
-            _client.UserUpdated -= _client_UserUpdated_NickChange;
+            _client.GuildMemberUpdated -= _client_GuildMemberUpdated_NickChange;
             NickChangesLogged = false;
         }
         #endregion
@@ -200,23 +200,17 @@ namespace Kratos.Services
 
         private async Task _client_UserUpdated_NameChange(SocketUser b, SocketUser a)
         {
-            var before = b as IGuildUser;
-            var after = a as IGuildUser;
-            if (before == null || after == null) return;
-            if (before.Username == after.Username) return;
+            await LogServerMessageAsync($"{b.Username} -> {a.Username}");
+            if (b.Username == a.Username) return;
 
-            await LogServerMessageAsync($"{before.Username}#{before.Discriminator} ({before.Id}) changed their username to {after.Username}");
+            await LogServerMessageAsync($"{b.Username}#{b.Discriminator} ({b.Id}) changed their username to {a.Username}");
         }
 
-        private async Task _client_UserUpdated_NickChange(SocketUser b, SocketUser a)
+        private async Task _client_GuildMemberUpdated_NickChange(SocketGuildUser b, SocketGuildUser a)
         {
-            Console.WriteLine("user updated");
-            var before = b as IGuildUser;
-            var after = a as IGuildUser;
-            if (before == null || after == null) return;
-            if (before.Nickname == after.Nickname) return;
+            if (b.Nickname == a.Nickname) return;
 
-            await LogServerMessageAsync($"{before.Nickname ?? before.Username} ({before.Id}) changed their nickname to {after.Nickname}");
+            await LogServerMessageAsync($"{b.Nickname ?? b.Username} ({b.Id}) changed their nickname to {a.Nickname}");
         }
         #endregion
 

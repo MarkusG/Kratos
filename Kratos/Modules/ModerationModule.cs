@@ -166,6 +166,7 @@ namespace Kratos.Modules
             await ReplyAsync(":ok:");
         }
         #endregion
+
         [Command("mute")]
         [Summary("Mutes a user for a given amount of time.")]
         [RequireCustomPermission("mod.mute")]
