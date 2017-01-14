@@ -5,6 +5,7 @@ using Discord;
 using Discord.WebSocket;
 using Discord.Commands;
 using Kratos.Configs;
+using Kratos.Services;
 
 namespace Kratos
 {
@@ -14,11 +15,13 @@ namespace Kratos
         private DiscordSocketClient _client;
         private CommandService _commands;
         private CoreConfig _config;
+        private LogService _log;
 
         public CommandHandler(IDependencyMap map)
         {
             _client = map.Get<DiscordSocketClient>();
             _config = map.Get<CoreConfig>();
+            _log = map.Get<LogService>();
             _commands = new CommandService();
             map.Add(_commands);
             _map = map;
@@ -47,16 +50,23 @@ namespace Kratos
                 var result = await _commands.ExecuteAsync(context, argPos, _map);
                 if (!result.IsSuccess)
                 {
-                    if (result is ExecuteResult)
+                    switch (result)
                     {
-                        var errorResult = (ExecuteResult)result;
-                        Console.WriteLine(errorResult.Exception);
+                        case ExecuteResult exResult:
+                            Console.WriteLine(exResult.Exception);
+                            break;
+                        case PreconditionResult preResult:
+                            await m.Channel.SendMessageAsync($":x: {preResult.ErrorReason}");
+                            break;
+                        default:
+                            await m.Channel.SendMessageAsync(result.ErrorReason);
+                            break;
                     }
-                    if (result is PreconditionResult)
-                    {
-                        var preconditionResult = (PreconditionResult)result;
-                        await m.Channel.SendMessageAsync($":x: {preconditionResult.ErrorReason}");
-                    }
+                }
+                if (result.IsSuccess)
+                {
+                    var author = message.Author as IGuildUser;
+                    await _log.LogModMessageAsync($"{author.Nickname ?? author.Username} executed a command:\n`{m.Content}`");
                 }
             }
         }
