@@ -23,49 +23,9 @@ namespace Kratos.Modules
         private CoreConfig _config;
         private BlacklistService _blacklist;
 
-        //[Command("help"), Summary("Displays this help message")]
-        //public async Task Help()
-        //{
-        //    StringBuilder response = new StringBuilder();
-        //    response.AppendLine("Contacts Commands:");
-        //    response.AppendLine();
-        //    foreach (var m in _commands.Modules)
-        //    {
-        //        if (m.Commands.Count() < 0) continue;
-        //        response.AppendLine($"{m.Name}");
-        //        response.AppendLine();
-        //        foreach (var c in m.Commands)
-        //        {
-        //            response.Append($"{c.Aliases.Aggregate((b, a) => b + " | " + a)} ");
-        //            foreach (var p in c.Parameters)
-        //            {
-        //                if (p.IsOptional)
-        //                    response.Append($"[{p.Name}] ");
-        //                else
-        //                    response.Append($"<{p.Name}> ");
-        //            }
-        //            response.AppendLine($"- {c.Summary}");
-        //            foreach (var p in c.Parameters)
-        //            {
-        //                var optional = p.IsOptional ? "(Optional)" : null;
-        //                response.AppendLine($"\t{p.Name} - {p.Summary} {optional}");
-        //            }
-        //            response.AppendLine();
-        //        }
-        //    }
-        //    if (!Directory.Exists("resources"))
-        //        Directory.CreateDirectory("resources");
-
-        //    using (var helpFile = File.Create(@"resources\help.txt"))
-        //    {
-        //        using (var helpWriter = new StreamWriter(helpFile))
-        //        {
-        //            await helpWriter.WriteAsync(response.ToString());
-        //        }
-        //    }
-
-        //    await Context.Channel.SendFileAsync(@"resources\help.txt");
-        //}
+        [Command("help"), Summary("Displays this help message")]
+        public async Task Help() =>
+            await ReplyAsync("https://github.com/MarkusGordathian/Kratos/wiki/Commands");
 
         [Command("ping")]
         [Summary("Returns \"Pong!\"")]

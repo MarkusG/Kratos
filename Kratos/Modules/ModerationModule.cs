@@ -18,7 +18,6 @@ namespace Kratos.Modules
         private RecordService _records;
         private UnpunishService _unpunish;
         private BlacklistService _blacklist;
-        private SlowmodeService _slowmode;
         private LogService _log;
         private CoreConfig _config;
 
@@ -215,44 +214,12 @@ namespace Kratos.Modules
             await _log.LogModMessageAsync($"{author.Nickname ?? author.Username} cleaned {num} messages in {(Context.Channel as ITextChannel).Mention}");
         }
 
-        [Command("slowmode"), Alias("sm")]
-        [Summary("Manage slow mode for a given channel")]
-        [RequireCustomPermission("mod.slowmode")]
-        public async Task SlowMode([Summary("+/-")] string action,
-                                   [Summary("Slowmode interval")] int intervalInSeconds = 0)
-        {
-            if (action != "+" && action != "-")
-            {
-                await ReplyAsync(":x:");
-                return;
-            }
-
-            if (action == "+" && intervalInSeconds == 0)
-            {
-                await ReplyAsync(":x:");
-                return;
-            }
-
-            switch (action)
-            {
-                case "+":
-                    _slowmode.Enable(intervalInSeconds);
-                    await ReplyAsync(":ok:");
-                    break;
-                case "-":
-                    _slowmode.Disable();
-                    await ReplyAsync(":ok:");
-                    break;
-            }
-        }
-
-        public ModerationModule(RecordService r, UnpunishService u, BlacklistService b, LogService l, SlowmodeService s, CoreConfig config)
+        public ModerationModule(RecordService r, UnpunishService u, BlacklistService b, LogService l, CoreConfig config)
         {
             _unpunish = u;
             _records = r;
             _blacklist = b;
             _log = l;
-            _slowmode = s;
             _config = config;
         }
     }
