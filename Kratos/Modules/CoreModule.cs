@@ -27,6 +27,57 @@ namespace Kratos.Modules
         public async Task Help() =>
             await ReplyAsync("https://github.com/MarkusGordathian/Kratos/wiki/Commands");
 
+        [Command("gendocs"), Summary("Displays this help message")]
+        [RequireCustomPermission("core.gendocs")]
+        public async Task GenerateDocumentation()
+        {
+            StringBuilder response = new StringBuilder();
+            foreach (var m in _commands.Modules)
+            {
+                if (m.Commands.Count() < 0) continue;
+                response.AppendLine($"# {m.Name} - GROUP PREFIX HERE #");
+                response.AppendLine();
+                foreach (var c in m.Commands)
+                {
+                    response.Append($"## `{c.Aliases.Aggregate((b, a) => b + " | " + a)} ");
+                    foreach (var p in c.Parameters)
+                    {
+                        if (p.IsOptional)
+                            response.Append($"[{p.Name}] ");
+                        else
+                            response.Append($"<{p.Name}> ");
+                    }
+                    response.AppendLine("` ##");
+                    response.AppendLine("### Functionality ###");
+                    response.AppendLine(c.Summary);
+                    if (c.Parameters.Count > 0)
+                    {
+                        response.AppendLine("### Parameters ###");
+
+                        foreach (var p in c.Parameters)
+                        {
+                            var optional = p.IsOptional ? " (Optional)" : null;
+                            response.AppendLine($"* {p.Name} - {p.Summary}{optional}");
+                        }
+                    }
+
+                    response.AppendLine();
+                }
+            }
+            if (!Directory.Exists("resources"))
+                Directory.CreateDirectory("resources");
+
+            using (var helpFile = File.Create(@"resources\help.txt"))
+            {
+                using (var helpWriter = new StreamWriter(helpFile))
+                {
+                    await helpWriter.WriteAsync(response.ToString());
+                }
+            }
+
+            await Context.Channel.SendFileAsync(@"resources\help.txt");
+        }
+
         [Command("ping")]
         [Summary("Returns \"Pong!\"")]
         public async Task Ping()
@@ -46,7 +97,7 @@ namespace Kratos.Modules
 
         [Command("addbypassrole"), Alias("abp")]
         [Summary("Adds a role for which the bot will ignore active protection")]
-        [RequireCustomPermission("blacklist.manage")]
+        [RequireCustomPermission("core.manage")]
         public async Task AddBypassRole([Summary("The role to add to the ignore list")] IRole role)
         {
             if (!_config.BypassIds.Contains(role.Id))
@@ -61,7 +112,7 @@ namespace Kratos.Modules
 
         [Command("removebypassrole"), Alias("rbp")]
         [Summary("Removes a role for which the bot will ignore active protection")]
-        [RequireCustomPermission("blacklist.manage")]
+        [RequireCustomPermission("core.manage")]
         public async Task RemoveBypassRole([Summary("The role to remove from the ignore list")] IRole role)
         {
             if (_config.BypassIds.Contains(role.Id))
@@ -76,7 +127,7 @@ namespace Kratos.Modules
 
         [Command("listbypassroles"), Alias("lbp")]
         [Summary("Lists all the roles for which the bot will ignore active protection")]
-        [RequireCustomPermission("blacklist.view")]
+        [RequireCustomPermission("core.view")]
         public async Task ListBypassRoles()
         {
             StringBuilder response = new StringBuilder("**BYPASS ROLES:**\n");

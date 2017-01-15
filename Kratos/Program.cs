@@ -14,7 +14,7 @@ namespace Kratos
     {
         static void Main(string[] args) => new Program().Start().GetAwaiter().GetResult();
 
-        public const string Version = "b1.2.2";
+        public const string Version = "b1.2.3";
         public static string ConfigDirectory = Directory.GetCurrentDirectory() + @"/config/";
         #region Private fields
         private DiscordSocketClient _client;
