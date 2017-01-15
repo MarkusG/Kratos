@@ -23,11 +23,11 @@ namespace Kratos.Modules
         private CoreConfig _config;
         private BlacklistService _blacklist;
 
-        [Command("help"), Summary("Displays this help message")]
+        [Command("help"), Summary("Displays this help page")]
         public async Task Help() =>
             await ReplyAsync("https://github.com/MarkusGordathian/Kratos/wiki/Commands");
 
-        [Command("gendocs"), Summary("Displays this help message")]
+        [Command("gendocs"), Summary("Generates these docs")]
         [RequireCustomPermission("core.gendocs")]
         public async Task GenerateDocumentation()
         {
@@ -79,7 +79,7 @@ namespace Kratos.Modules
         }
 
         [Command("ping")]
-        [Summary("Returns \"Pong!\"")]
+        [Summary("Returns \"Pong!\" and the bot's latency to Discord")]
         public async Task Ping()
         {
             await ReplyAsync($"Pong! My latency is currently {_client.Latency}ms.");
@@ -88,7 +88,7 @@ namespace Kratos.Modules
         [Command("setmuterole"), Alias("smr")]
         [Summary("Sets the mute role")]
         [RequireCustomPermission("core.manage")]
-        public async Task SetMuteRole(IRole role)
+        public async Task SetMuteRole([Summary("Self-explanatory")] IRole role)
         {
             _config.MuteRoleId = role.Id;
             await _config.SaveAsync();

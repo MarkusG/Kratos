@@ -17,7 +17,7 @@ namespace Kratos.Modules
         [Command("enable")]
         [Summary("Enables ratelimiting with a given second limit")]
         [RequireCustomPermission("ratelimit.manage")]
-        public async Task Enable([Summary("The maximum amount of time in which a user can send 3 messages")] int limit)
+        public async Task Enable([Summary("The maximum amount of time (in seconds) in which a user can send 3 messages")] int limit)
         {
             if (!_service.IsEnabled)
             {
@@ -49,7 +49,7 @@ namespace Kratos.Modules
         }
 
         [Command("setlimit")]
-        [Summary("Sets the maximum amount of time in which a user can send 3 messages")]
+        [Summary("Sets the maximum amount of time (in seconds) in which a user can send 3 messages")]
         [RequireCustomPermission("ratelimit.manage")]
         public async Task SetLimit([Summary("New limit")] int limit)
         {
