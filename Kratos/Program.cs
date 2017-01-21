@@ -14,8 +14,9 @@ namespace Kratos
     {
         static void Main(string[] args) => new Program().Start().GetAwaiter().GetResult();
 
-        public const string Version = "b1.2.3";
+        public const string Version = "b1.2.4";
         public static string ConfigDirectory = Directory.GetCurrentDirectory() + @"/config/";
+
         #region Private fields
         private DiscordSocketClient _client;
         private BlacklistService _blacklist;
@@ -30,10 +31,12 @@ namespace Kratos
         private DependencyMap _map;
         private CoreConfig _config;
         #endregion
+
         public async Task Start()
         {
             Console.Title = $"Kratos {Version}";
-            #region Setting up DiscordClient
+
+            // Set up our Discord client
             _client = new DiscordSocketClient(new DiscordSocketConfig()
             {
                 LogLevel = LogSeverity.Verbose,
@@ -41,8 +44,8 @@ namespace Kratos
             });
 
             _client.Log += Log;
-            #endregion
-            #region Setting up configs
+
+            // Set up the config directory and core config
             if (!Directory.Exists(ConfigDirectory))
                 Directory.CreateDirectory(ConfigDirectory);
 
@@ -50,8 +53,8 @@ namespace Kratos
                 _config = await CoreConfig.UseCurrentAsync();
             else
                 _config = await CoreConfig.CreateNewAsync();
-            #endregion
-            #region Setting up services
+
+            // Set up services
             _usernotes = new UsernoteService();
 
             _records = new RecordService();
@@ -77,8 +80,8 @@ namespace Kratos
             _permissions = new PermissionsService();
             _permissions.AddPermissions(Assembly.GetEntryAssembly());
             await _permissions.LoadConfigurationAsync();
-            #endregion
-            #region Adding dependencies to map
+            
+            // Instantiate the dependency map and add our services and client to it.
             _map = new DependencyMap();
             _map.Add(_blacklist);
             _map.Add(_permissions);
@@ -90,18 +93,19 @@ namespace Kratos
             _map.Add(_ratelimit);
             _map.Add(_client);
             _map.Add(_config);
-            #endregion
-            #region Setting up commands
+
+            // Set up command handler
             _commands = new CommandHandler(_map);
             await _commands.InstallAsync();
-            #endregion
-            #region Connect to Discord
+
+            // Connect to Discord
             await _client.LoginAsync(TokenType.Bot, _config.Token);
             await _client.ConnectAsync();
-            #endregion
-            #region Start unpunisher loop
+
+            // Start unpunisher loop
             await _unpunish.StartAsync();
-            #endregion
+
+            // Hang indefinitely
             await Task.Delay(-1);
         }
 

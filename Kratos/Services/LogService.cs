@@ -200,7 +200,6 @@ namespace Kratos.Services
 
         private async Task _client_UserUpdated_NameChange(SocketUser b, SocketUser a)
         {
-            await LogServerMessageAsync($"{b.Username} -> {a.Username}");
             if (b.Username == a.Username) return;
 
             await LogServerMessageAsync($"{b.Username}#{b.Discriminator} ({b.Id}) changed their username to {a.Username}");
