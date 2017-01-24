@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net.Http;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -22,6 +23,12 @@ namespace Kratos.Modules
         private CommandService _commands;
         private CoreConfig _config;
         private BlacklistService _blacklist;
+        private string[] _imageExtensions = new string[]
+        {
+            ".jpg",
+            ".jpeg",
+            ".png"
+        };
 
         [Command("help"), Summary("Displays this help page")]
         public async Task Help() =>
@@ -136,38 +143,32 @@ namespace Kratos.Modules
             await ReplyAsync(response.ToString());
         }
 
-        //[Command("edituser"), Summary("Edits the bot's account")]
-        //public async Task Edit([Summary("The part of the bot's account you want to edit (name, avatar)")] string action,
-        //                       [Summary("The bot's new name; a direct imgur link to the bot's new avatar")] string contents)
-        //{
-        //    switch (action)
-        //    {
-        //        case "avatar":
-        //            using (System.Net.WebClient wc = new System.Net.WebClient())
-        //            {
-        //                if (!contents.StartsWith(@"http://i.imgur.com/"))
-        //                {
-        //                    await ReplyAsync("Please enter a valid direct imgur link to the bot's new avatar.");
-        //                    return;
-        //                }
-        //                else
-        //                {
-        //                    wc.
-        //                    wc.DownloadFile(new Uri(contents), "avatar.jpg");
-        //                    await Task.Delay(10);
-        //                }
-        //            }
-        //            var avatarFile = new FileStream("avatar.jpg", FileMode.Open);
-        //            await Context.Client.CurrentUser.ModifyAsync(x => x.Avatar = new Discord.API.Image(avatarFile));
-        //            avatarFile.Dispose();
-        //            File.Delete("avatar.jpg");
-        //            break;
-        //        case "name":
-        //            await _client.CurrentUser.ModifyAsync(x => x.Username = contents);
-        //            break;
-        //    }
+        [Command("avatar")]
+        [Summary("Sets the bot's avatar")]
+        [RequireCustomPermission("core.modifyuser")]
+        public async Task Avatar([Summary("A direct image link to the bot's new avatar")] string content)
+        {
+            if (!_imageExtensions.Any(x => content.EndsWith(x)))
+            {
+                await ReplyAsync(":x: Please enter a valid direct image link to the bot's new avatar.");
+                return;
+            }
+            using (HttpClient httpClient = new HttpClient())
+            {
+                var response = await httpClient.GetAsync(content);
+                var image = await response.Content.ReadAsStreamAsync();
+                await Context.Client.CurrentUser.ModifyAsync(x => x.Avatar = new Image(image));
+            }
+        }
 
-        //}
+        [Command("username")]
+        [Summary("Sets the bot's username")]
+        [RequireCustomPermission("core.modifyuser")]
+        public async Task Username([Summary("The bot's new username")] string content)
+        {
+            await _client.CurrentUser.ModifyAsync(x => x.Username = content);
+            await ReplyAsync(":ok:");
+        }
 
         [Command("info")]
         [Summary("Returns general information about the bot")]

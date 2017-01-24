@@ -14,7 +14,7 @@ namespace Kratos
     {
         static void Main(string[] args) => new Program().Start().GetAwaiter().GetResult();
 
-        public const string Version = "b1.2.4";
+        public const string Version = "b1.2.5";
         public static string ConfigDirectory = Directory.GetCurrentDirectory() + @"/config/";
 
         #region Private fields
@@ -116,6 +116,7 @@ namespace Kratos
                 case LogSeverity.Warning: Console.ForegroundColor = ConsoleColor.Yellow; break;
                 case LogSeverity.Error: Console.ForegroundColor = ConsoleColor.Red; break;
                 case LogSeverity.Critical: Console.ForegroundColor = ConsoleColor.DarkRed; break;
+                case LogSeverity.Verbose: Console.ForegroundColor = ConsoleColor.White; break;
             }
 
             Console.WriteLine(m.ToString());

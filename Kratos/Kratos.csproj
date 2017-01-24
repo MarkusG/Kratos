@@ -10,10 +10,10 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Discord.Net">
-      <Version>1.0.0-beta2-00528</Version>
+      <Version>1.0.0-rc-00546</Version>
     </PackageReference>
     <PackageReference Include="Discord.Net.Commands">
-      <Version>1.0.0-beta2-00528</Version>
+      <Version>1.0.0-rc-00546</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="1.1.0" />
     <PackageReference Include="Microsoft.NETCore.App">
