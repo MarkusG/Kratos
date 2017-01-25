@@ -14,7 +14,7 @@ namespace Kratos
     {
         static void Main(string[] args) => new Program().Start().GetAwaiter().GetResult();
 
-        public const string Version = "b1.2.5";
+        public const string Version = "b1.2.6";
         public static string ConfigDirectory = Directory.GetCurrentDirectory() + @"/config/";
 
         #region Private fields
@@ -23,6 +23,7 @@ namespace Kratos
         private PermissionsService _permissions;
         private UsernoteService _usernotes;
         private RecordService _records;
+        private TagService _tags;
         private UnpunishService _unpunish;
         private LogService _log;
         private SlowmodeService _slowmode;
@@ -59,6 +60,8 @@ namespace Kratos
 
             _records = new RecordService();
 
+            _tags = new TagService();
+
             _log = new LogService(_client);
             await _log.LoadConfigurationAsync();
 
@@ -87,6 +90,7 @@ namespace Kratos
             _map.Add(_permissions);
             _map.Add(_usernotes);
             _map.Add(_records);
+            _map.Add(_tags);
             _map.Add(_unpunish);
             _map.Add(_log);
             _map.Add(_slowmode);

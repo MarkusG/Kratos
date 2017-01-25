@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Kratos.Configs
+﻿namespace Kratos.Configs
 {
     public class BlacklistConfig
     {

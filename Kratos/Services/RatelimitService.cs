@@ -3,7 +3,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.Text;
 using Newtonsoft.Json;
 using Discord;
 using Discord.WebSocket;
