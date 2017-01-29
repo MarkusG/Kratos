@@ -83,7 +83,7 @@ namespace Kratos.Services
             var guild = (m.Channel as IGuildChannel)?.Guild;
             if (guild == null) return;
             if (author.RoleIds.Any(x => _config.BypassIds.Contains(x))) return;
-            if (!Blacklist.Any(x => m.Content.Contains(x))) return;
+            if (!IsViolatingBlacklist(m.Content)) return;
 
             var muteRole = guild.GetRole(_config.MuteRoleId);
             await m.DeleteAsync();
@@ -100,6 +100,13 @@ namespace Kratos.Services
             var mute = await _records.AddMuteAsync(guild.Id, author.Id, 0, timestamp, unmuteAt, "N/A (BLACKLIST AUTO-MUTE)");
             _records.DisposeContext();
             _unpunish.Mutes.Add(mute);
+        }
+
+        private bool IsViolatingBlacklist(string text)
+        {
+            if (Blacklist.Any(x => text.ToLower().Contains(x))) return true;
+
+            return false;
         }
 
         public BlacklistService(DiscordSocketClient c, UnpunishService u, RecordService r, LogService l, CoreConfig config)

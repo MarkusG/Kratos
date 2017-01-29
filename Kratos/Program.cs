@@ -14,7 +14,7 @@ namespace Kratos
     {
         static void Main(string[] args) => new Program().Start().GetAwaiter().GetResult();
 
-        public const string Version = "b1.2.6";
+        public const string Version = "b1.2.7";
         public static string ConfigDirectory = Directory.GetCurrentDirectory() + @"/config/";
 
         #region Private fields

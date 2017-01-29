@@ -73,7 +73,7 @@ namespace Kratos.Modules
             if (!Directory.Exists("resources"))
                 Directory.CreateDirectory("resources");
 
-            using (var helpFile = File.Create(@"resources\help.txt"))
+            using (var helpFile = File.Create(@"resources/help.txt"))
             {
                 using (var helpWriter = new StreamWriter(helpFile))
                 {
