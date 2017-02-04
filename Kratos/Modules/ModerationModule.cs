@@ -29,10 +29,10 @@ namespace Kratos.Modules
         {
             var author = Context.User as IGuildUser;
             var authorsHighestRole = author.RoleIds.Select(x => Context.Guild.GetRole(x))
-                                                   .OrderBy(x => x.Position)
+                                                   .OrderByDescending(x => x.Position)
                                                    .First();
             var usersHighestRole = user.RoleIds.Select(x => Context.Guild.GetRole(x))
-                                               .OrderBy(x => x.Position)
+                                               .OrderByDescending(x => x.Position)
                                                .First();
 
             if (usersHighestRole.Position >= authorsHighestRole.Position)
@@ -105,10 +105,10 @@ namespace Kratos.Modules
         {
             var author = Context.User as IGuildUser;
             var authorsHighestRole = author.RoleIds.Select(x => Context.Guild.GetRole(x))
-                                                   .OrderBy(x => x.Position)
+                                                   .OrderByDescending(x => x.Position)
                                                    .First();
             var usersHighestRole = user.RoleIds.Select(x => Context.Guild.GetRole(x))
-                                               .OrderBy(x => x.Position)
+                                               .OrderByDescending(x => x.Position)
                                                .First();
 
             if (usersHighestRole.Position >= authorsHighestRole.Position)
@@ -139,10 +139,10 @@ namespace Kratos.Modules
         {
             var author = Context.User as IGuildUser;
             var authorsHighestRole = author.RoleIds.Select(x => Context.Guild.GetRole(x))
-                                                   .OrderBy(x => x.Position)
+                                                   .OrderByDescending(x => x.Position)
                                                    .First();
             var usersHighestRole = user.RoleIds.Select(x => Context.Guild.GetRole(x))
-                                               .OrderBy(x => x.Position)
+                                               .OrderByDescending(x => x.Position)
                                                .First();
 
             if (usersHighestRole.Position >= authorsHighestRole.Position)
