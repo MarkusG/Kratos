@@ -70,18 +70,11 @@ namespace Kratos.Modules
                     response.AppendLine();
                 }
             }
-            if (!Directory.Exists("resources"))
-                Directory.CreateDirectory("resources");
 
-            using (var helpFile = File.Create(@"resources/help.txt"))
-            {
-                using (var helpWriter = new StreamWriter(helpFile))
-                {
-                    await helpWriter.WriteAsync(response.ToString());
-                }
-            }
+            var helpBytes = Encoding.ASCII.GetBytes(response.ToString());
+            var stream = new MemoryStream(helpBytes);
 
-            await Context.Channel.SendFileAsync(@"resources\help.txt");
+            await Context.Channel.SendFileAsync(stream, "help.md");
         }
 
         [Command("ping")]

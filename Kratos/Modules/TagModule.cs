@@ -15,10 +15,23 @@ namespace Kratos.Modules
         private TagService _service;
 
         [Command]
-        [Summary("Returns the value associated with the given tag.")]
+        [Summary("Returns the value associated with the given tag. When not given an argument, returns all tag names.")]
         [RequireCustomPermission("tag.view")]
-        public async Task Tag([Summary("The tag's value")] string tag)
+        public async Task Tag([Summary("The tag's value")] string tag = null)
         {
+            if (tag == null)
+            {
+                var tags = (await _service.GetTagsAsync()).Select(x => x.Tag);
+                if (tags.Count() < 1)
+                {
+                    await ReplyAsync(":x: No tags found.");
+                    return;
+                }
+                var response = tags.Aggregate((b, a) => $"{b}, {a}");
+                await ReplyAsync(response);
+                _service.DisposeContext();
+                return;
+            }
             var entity = await _service.GetTagAsync(tag);
             if (entity == null)
             {
@@ -29,7 +42,7 @@ namespace Kratos.Modules
             _service.DisposeContext();
         }
 
-        [Command("add")]
+        [Command("add"), Alias("+")]
         [Summary("Adds a tag.")]
         [RequireCustomPermission("tag.manage")]
         public async Task Add([Summary("The tag's key")] string key,
@@ -52,7 +65,7 @@ namespace Kratos.Modules
             _service.DisposeContext();
         }
 
-        [Command("remove")]
+        [Command("remove"), Alias("-")]
         [Summary("Removes a tag.")]
         [RequireCustomPermission("tag.manage")]
         public async Task Remove([Summary("The tag to remove")] string key)
@@ -84,22 +97,6 @@ namespace Kratos.Modules
             var author = await Context.Guild.GetUserAsync(entity.CreatedBy);
             response.AppendLine($"Created by: {author.Username}#{author.Discriminator}");
             await ReplyAsync(response.ToString());
-            _service.DisposeContext();
-        }
-
-        [Command("list")]
-        [Summary("List all tags.")]
-        [RequireCustomPermission("tag.view")]
-        public async Task List()
-        {
-            var tags = (await _service.GetTagsAsync()).Select(x => x.Tag);
-            if (tags.Count() < 1)
-            {
-                await ReplyAsync(":x: No tags found.");
-                return;
-            }
-            var response = tags.Aggregate((b, a) => $"{b}, {a}");
-            await ReplyAsync(response);
             _service.DisposeContext();
         }
 

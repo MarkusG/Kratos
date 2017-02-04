@@ -125,7 +125,7 @@ namespace Kratos.Services
         {
             var serializedConfig = JsonConvert.SerializeObject(Permissions, Formatting.Indented);
 
-            using (var configStream = File.OpenWrite(Program.ConfigDirectory + @"permissions.json"))
+            using (var configStream = File.OpenWrite(Path.Combine(Directory.GetCurrentDirectory(), "config", "permissions.json")))
             {
                 using (var configWriter = new StreamWriter(configStream))
                 {
@@ -137,11 +137,11 @@ namespace Kratos.Services
 
         public async Task<bool> LoadConfigurationAsync()
         {
-            if (!File.Exists(Program.ConfigDirectory + @"permissions.json")) return false;
+            if (!File.Exists(Path.Combine(Directory.GetCurrentDirectory(), "config", "permissions.json"))) return false;
 
             string serializedConfig;
 
-            using (var configStream = File.OpenRead(Program.ConfigDirectory + @"permissions.json"))
+            using (var configStream = File.OpenRead(Path.Combine(Directory.GetCurrentDirectory(), "config", "permissions.json")))
             {
                 using (var configReader = new StreamReader(configStream))
                 {

@@ -14,8 +14,7 @@ namespace Kratos
     {
         static void Main(string[] args) => new Program().Start().GetAwaiter().GetResult();
 
-        public const string Version = "b1.2.7";
-        public static string ConfigDirectory = Directory.GetCurrentDirectory() + @"/config/";
+        public const string Version = "b1.2.8";
 
         #region Private fields
         private DiscordSocketClient _client;
@@ -47,10 +46,10 @@ namespace Kratos
             _client.Log += Log;
 
             // Set up the config directory and core config
-            if (!Directory.Exists(ConfigDirectory))
-                Directory.CreateDirectory(ConfigDirectory);
+            if (!Directory.Exists(Path.Combine(Directory.GetCurrentDirectory(), "config")))
+                Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "config"));
 
-            if (File.Exists(ConfigDirectory + @"core.json"))
+            if (File.Exists(Path.Combine(Directory.GetCurrentDirectory(), "config", "core.json")))
                 _config = await CoreConfig.UseCurrentAsync();
             else
                 _config = await CoreConfig.CreateNewAsync();

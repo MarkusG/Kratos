@@ -47,7 +47,7 @@ namespace Kratos.Services
 
             var serializedConfig = JsonConvert.SerializeObject(config);
 
-            using (var configStream = File.OpenWrite(Program.ConfigDirectory + @"ratelimit.json"))
+            using (var configStream = File.OpenWrite(Path.Combine(Directory.GetCurrentDirectory(), "config", "ratelimit.json")))
             {
                 using (var configWriter = new StreamWriter(configStream))
                 {
@@ -59,9 +59,9 @@ namespace Kratos.Services
 
         public async Task<bool> LoadConfigurationAsync()
         {
-            if (!File.Exists(Program.ConfigDirectory + @"ratelimit.json")) return false;
+            if (!File.Exists(Path.Combine(Directory.GetCurrentDirectory(), "config", "ratelimit.json"))) return false;
 
-            using (var configStream = File.OpenRead(Program.ConfigDirectory + @"ratelimit.json"))
+            using (var configStream = File.OpenRead(Path.Combine(Directory.GetCurrentDirectory(), "config", "ratelimit.json")))
             {
                 using (var configReader = new StreamReader(configStream))
                 {
