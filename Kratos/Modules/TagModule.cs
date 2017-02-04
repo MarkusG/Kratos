@@ -80,7 +80,7 @@ namespace Kratos.Modules
             _service.DisposeContext();
         }
 
-        [Command("info")]
+        [Command("info"), Alias("?")]
         [Summary("Get metadata for a tag.")]
         [RequireCustomPermission("tag.view")]
         public async Task Info([Summary("The tag for which to get metadata")] string key)
