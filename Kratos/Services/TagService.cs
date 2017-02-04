@@ -34,12 +34,16 @@ namespace Kratos.Services
             return true;
         }
 
-        public async Task<TagValue> GetTagAsync(string tag)
+        public async Task<TagValue> GetTagAsync(string tag, bool invoke)
         {
             if (_db == null)
                 _db = new TagContext();
             await _db.Database.EnsureCreatedAsync();
-            return _db.Tags.FirstOrDefault(x => x.Tag == tag);
+            var toReturn = _db.Tags.FirstOrDefault(x => x.Tag == tag);
+            if (!invoke) return toReturn;
+            toReturn.TimesInvoked++;
+            await _db.SaveChangesAsync();
+            return toReturn;
         }
 
         public async Task<IEnumerable<TagValue>> GetTagsAsync()

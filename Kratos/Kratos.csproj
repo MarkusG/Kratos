@@ -4,6 +4,11 @@
     <TargetFramework>netcoreapp1.1</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="config\**" />
+    <EmbeddedResource Remove="config\**" />
+    <None Remove="config\**" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Discord.Net.Commands" Version="1.0.0-rc-00586" />
     <PackageReference Include="Discord.Net.WebSocket" Version="1.0.0-rc-00586" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="1.1.0" />

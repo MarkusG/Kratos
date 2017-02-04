@@ -14,5 +14,7 @@ namespace Kratos.Data.Models
         public ulong CreatedAt { get; set; }
 
         public ulong CreatedBy { get; set; }
+
+        public int TimesInvoked { get; set; }
     }
 }

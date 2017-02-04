@@ -32,7 +32,7 @@ namespace Kratos.Modules
                 _service.DisposeContext();
                 return;
             }
-            var entity = await _service.GetTagAsync(tag);
+            var entity = await _service.GetTagAsync(tag, true);
             if (entity == null)
             {
                 await ReplyAsync(":x: Tag not found.");
@@ -85,7 +85,7 @@ namespace Kratos.Modules
         [RequireCustomPermission("tag.view")]
         public async Task Info([Summary("The tag for which to get metadata")] string key)
         {
-            var entity = await _service.GetTagAsync(key);
+            var entity = await _service.GetTagAsync(key, false);
             if (entity == null)
             {
                 await ReplyAsync(":x: Tag not found.");
@@ -96,6 +96,7 @@ namespace Kratos.Modules
             response.AppendLine($"Created at: {new DateTime(1970, 1, 1).AddSeconds(entity.CreatedAt)} UTC");
             var author = await Context.Guild.GetUserAsync(entity.CreatedBy);
             response.AppendLine($"Created by: {author.Username}#{author.Discriminator}");
+            response.AppendLine($"Times invoked: {entity.TimesInvoked}");
             await ReplyAsync(response.ToString());
             _service.DisposeContext();
         }
