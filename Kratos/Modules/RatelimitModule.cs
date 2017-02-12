@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using System.Text;
+using Discord;
 using Discord.Commands;
 using Kratos.Preconditions;
 using Kratos.Services;
@@ -62,6 +63,27 @@ namespace Kratos.Modules
         {
             _service.MuteTime = timeInSeconds;
             await ReplyAsync(":ok:");
+        }
+
+        [Command("ignore")]
+        [Summary("Toggle ignoring a channel for ratelimiting.")]
+        [RequireCustomPermission("ratelimit.manage")]
+        public async Task IgnoreChannel([Summary("Channel for which to toggle ignoring")] IGuildChannel channel)
+        {
+            if (_service.IgnoredChannels.Contains(channel.Id))
+            {
+                _service.IgnoredChannels.Remove(channel.Id);
+                await _service.SaveConfigurationAsync();
+                await ReplyAsync($":ok: Now ignoring ratelimit in {(channel as ITextChannel).Mention}.");
+                return;
+            }
+            else
+            {
+                _service.IgnoredChannels.Add(channel.Id);
+                await _service.SaveConfigurationAsync();
+                await ReplyAsync($":ok: No longer ignoring ratelimit in {(channel as ITextChannel).Mention}.");
+                return;
+            }
         }
 
         [Command("status")]

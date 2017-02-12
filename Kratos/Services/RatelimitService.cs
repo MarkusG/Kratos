@@ -22,6 +22,7 @@ namespace Kratos.Services
         public int Limit { get; set; }
         public int MuteTime { get; set; }
         public bool IsEnabled { get; private set; }
+        public List<ulong> IgnoredChannels { get; set; }
 
         public void Enable(int limit)
         {
@@ -42,7 +43,8 @@ namespace Kratos.Services
             {
                 Limit = Limit,
                 MuteTime = MuteTime,
-                IsEnabled = IsEnabled
+                IsEnabled = IsEnabled,
+                IgnoredChannels = IgnoredChannels.ToArray()
             };
 
             var serializedConfig = JsonConvert.SerializeObject(config);
@@ -72,6 +74,7 @@ namespace Kratos.Services
                     Limit = config.Limit;
                     MuteTime = config.MuteTime;
                     IsEnabled = config.IsEnabled;
+                    IgnoredChannels = IgnoredChannels.ToList();
 
                     return true;
                 }
@@ -85,6 +88,7 @@ namespace Kratos.Services
             if (m == null) return;
             var author = m.Author as IGuildUser;
             if (author == null) return;
+            if (IgnoredChannels.Contains(m.Channel.Id)) return;
 
             if (author.RoleIds.Any(x => _config.BypassIds.Contains(x))) return;
 

@@ -104,7 +104,9 @@ namespace Kratos.Services
 
         private bool IsViolatingBlacklist(string text)
         {
-            if (Blacklist.Any(x => text.ToLower().Contains(x))) return true;
+            if (Blacklist.Any(x => text.ToLower()
+                                       .Replace(" ", "")
+                                       .Contains(x))) return true;
 
             return false;
         }

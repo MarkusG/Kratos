@@ -7,5 +7,7 @@
         public int MuteTime { get; set; }
 
         public bool IsEnabled { get; set; }
+
+        public ulong[] IgnoredChannels { get; set; }
     }
 }
