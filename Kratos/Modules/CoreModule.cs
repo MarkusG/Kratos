@@ -41,7 +41,7 @@ namespace Kratos.Modules
             foreach (var m in _commands.Modules)
             {
                 if (m.Commands.Count() < 0) continue;
-                response.AppendLine($"# {m.Name} - GROUP PREFIX HERE #");
+                response.AppendLine($"# {m.Name} #");
                 response.AppendLine();
                 foreach (var c in m.Commands)
                 {
@@ -65,6 +65,14 @@ namespace Kratos.Modules
                             var optional = p.IsOptional ? " (Optional)" : null;
                             response.AppendLine($"* {p.Name} - {p.Summary}{optional}");
                         }
+                        response.AppendLine();
+                    }
+
+                    var permission = c.Preconditions.FirstOrDefault(x => x is RequireCustomPermissionAttribute) as RequireCustomPermissionAttribute;
+                    if (permission != null)
+                    {
+                        response.AppendLine("### Permission ###");
+                        response.AppendLine($"`{permission.Permission}`");
                     }
 
                     response.AppendLine();
