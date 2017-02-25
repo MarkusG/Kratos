@@ -41,11 +41,12 @@ namespace Kratos.Modules
             foreach (var m in _commands.Modules)
             {
                 if (m.Commands.Count() < 0) continue;
-                response.AppendLine($"# {m.Name} #");
+                response.AppendLine($"# {m.Name} - {m.Aliases.FirstOrDefault()} #");
                 response.AppendLine();
                 foreach (var c in m.Commands)
                 {
-                    response.Append($"## `{c.Aliases.Aggregate((b, a) => b + " | " + a)} ");
+                    var prefixlessAliases = c.Aliases.Select(x => x.Remove(0, c.Module.Aliases.FirstOrDefault().Length));
+                    response.Append($"## `{prefixlessAliases.Aggregate((b, a) => b + " | " + a)} ");
                     foreach (var p in c.Parameters)
                     {
                         if (p.IsOptional)
