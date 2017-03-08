@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Text;
@@ -29,6 +30,10 @@ namespace Kratos.Services
         public bool NameChangesLogged { get; private set; }
 
         public bool NickChangesLogged { get; private set; }
+
+        public bool RoleUpdatesLogged { get; private set; }
+
+        public bool BansLogged { get; private set; }
 
         #region Server Log Command Methods
         public void EnableEditLogging()
@@ -102,6 +107,30 @@ namespace Kratos.Services
             _client.GuildMemberUpdated -= _client_GuildMemberUpdated_NickChange;
             NickChangesLogged = false;
         }
+
+        public void EnableRoleChangeLogging()
+        {
+            _client.GuildMemberUpdated += _client_GuildMemberUpdated_RoleChange;
+            RoleUpdatesLogged = true;
+        }
+
+        public void DisableRoleChangeLogging()
+        {
+            _client.GuildMemberUpdated -= _client_GuildMemberUpdated_RoleChange;
+            RoleUpdatesLogged = false;
+        }
+
+        public void EnableBanLogging()
+        {
+            _client.UserBanned += _client_UserBanned;
+            BansLogged = true;
+        }
+
+        public void DisableBanLogging()
+        {
+            _client.UserBanned -= _client_UserBanned;
+            BansLogged = false;
+        }
         #endregion
 
         public async Task LogServerMessageAsync(string message)
@@ -160,6 +189,10 @@ namespace Kratos.Services
                     if (NameChangesLogged) EnableNameChangeLogging();
                     NickChangesLogged = config.NickChangesLogged;
                     if (NickChangesLogged) EnableNickChangeLogging();
+                    RoleUpdatesLogged = config.RoleUpdatesLogged;
+                    if (NickChangesLogged) EnableNickChangeLogging();
+                    BansLogged = config.BansLogged;
+                    if (BansLogged) EnableBanLogging();
 
                     return true;
                 }
@@ -169,11 +202,13 @@ namespace Kratos.Services
         #region Server Log Event Handlers
         private async Task _client_MessageUpdated(Optional<SocketMessage> b, SocketMessage a)
         {
+            if (a.Id == _client.CurrentUser.Id) return;
+
             var before = b.GetValueOrDefault();
             if (before == null) return;
             var author = a.Author as IGuildUser;
             if (author == null) return;
-            await LogServerMessageAsync($"{author.Nickname ?? author.Username} ({author.Id}) edited their message in {(a.Channel as ITextChannel).Mention}:\n" +
+            await LogServerMessageAsync($"{author.Nickname ?? author.Username}#{author.Discriminator} ({author.Id}) edited their message in {(a.Channel as ITextChannel).Mention}:\n" +
                                         $"Before: `{before.Content}`\n" + 
                                         $"After: `{a.Content}`");
         }
@@ -184,7 +219,7 @@ namespace Kratos.Services
             if (message == null) return;
             var author = message.Author as IGuildUser;
             if (author == null) return;
-            await LogServerMessageAsync($"{author.Nickname ?? author.Username} ({author.Id})'s message was deleted in {(message.Channel as ITextChannel).Mention}:\n" +
+            await LogServerMessageAsync($"{author.Nickname ?? author.Username}#{author.Discriminator} ({author.Id})'s message was deleted in {(message.Channel as ITextChannel).Mention}:\n" +
                                         $"`{message.Content}`");
         }
 
@@ -208,8 +243,33 @@ namespace Kratos.Services
         private async Task _client_GuildMemberUpdated_NickChange(SocketGuildUser b, SocketGuildUser a)
         {
             if (b.Nickname == a.Nickname) return;
+            if (a.Nickname == null)
+            {
+                await LogServerMessageAsync($"{b.Username}#{b.Discriminator} ({b.Nickname}) ({b.Id}) removed their nickname.");
+                return;
+            }
+            await LogServerMessageAsync($"{b.Nickname ?? b.Username}#{b.Discriminator} ({b.Id}) changed their nickname to {a.Nickname}");
+        }
 
-            await LogServerMessageAsync($"{b.Nickname ?? b.Username} ({b.Id}) changed their nickname to {a.Nickname}");
+        private async Task _client_GuildMemberUpdated_RoleChange(SocketGuildUser b, SocketGuildUser a)
+        {
+            if (b.RoleIds == a.RoleIds) return;
+            var guild = (_client.GetChannel(ServerLogChannelId) as SocketGuildChannel).Guild;
+            if (b.RoleIds.Count > a.RoleIds.Count)
+            {
+                var roleId = b.RoleIds.Except(a.RoleIds).FirstOrDefault();
+                await LogServerMessageAsync($"{b.Nickname ?? b.Username}#{b.Discriminator} ({b.Id}) has lost role: {guild.GetRole(roleId).Name}");
+            }
+            else
+            {
+                var roleId = a.RoleIds.Except(b.RoleIds).FirstOrDefault();
+                await LogServerMessageAsync($"{b.Nickname ?? b.Username}#{b.Discriminator} ({b.Id}) has gained role: {guild.GetRole(roleId).Name}");
+            }
+        }
+
+        private async Task _client_UserBanned(SocketUser u, SocketGuild g)
+        {
+            await LogServerMessageAsync($":hammer: {u.Username}#{u.Discriminator} ({u.Id}) was banned from the server.");
         }
         #endregion
 

@@ -46,6 +46,8 @@ namespace Kratos.Modules
             response.AppendLine($"User leaves: {_log.LeavesLogged}");
             response.AppendLine($"Username changes: {_log.NameChangesLogged}");
             response.AppendLine($"Nickname changes: {_log.NickChangesLogged}");
+            response.AppendLine($"Role updates: {_log.RoleUpdatesLogged}");
+            response.AppendLine($"Bans: {_log.BansLogged}");
             await ReplyAsync(response.ToString());
         }
 
@@ -158,6 +160,44 @@ namespace Kratos.Modules
             {
                 _log.DisableNickChangeLogging();
                 await ReplyAsync(":ok: No longer logging nickname changes.");
+            }
+
+            await _log.SaveConfigurationAsync();
+        }
+
+        [Command("roleupdates")]
+        [Summary("Toggle logging role updates of users")]
+        [RequireCustomPermission("log.manage")]
+        public async Task LogRoleUpdates()
+        {
+            if (!_log.RoleUpdatesLogged)
+            {
+                _log.EnableRoleChangeLogging();
+                await ReplyAsync(":ok: Now logging role updates.");
+            }
+            else
+            {
+                _log.DisableRoleChangeLogging();
+                await ReplyAsync(":ok: No longer logging role updates.");
+            }
+
+            await _log.SaveConfigurationAsync();
+        }
+
+        [Command("bans")]
+        [Summary("Toggle logging of bans")]
+        [RequireCustomPermission("log.manage")]
+        public async Task LogBans()
+        {
+            if (!_log.BansLogged)
+            {
+                _log.EnableBanLogging();
+                await ReplyAsync(":ok: Now logging bans.");
+            }
+            else
+            {
+                _log.DisableBanLogging();
+                await ReplyAsync(":ok: No longer logging bans.");
             }
 
             await _log.SaveConfigurationAsync();

@@ -20,6 +20,10 @@ namespace Kratos.Configs
 
         public bool NickChangesLogged { get; set; }
 
+        public bool RoleUpdatesLogged { get; set; }
+
+        public bool BansLogged { get; set; }
+
         public LogConfig()
         {
 
@@ -35,6 +39,8 @@ namespace Kratos.Configs
             LeavesLogged = s.LeavesLogged;
             NameChangesLogged = s.NameChangesLogged;
             NickChangesLogged = s.NickChangesLogged;
+            RoleUpdatesLogged = s.RoleUpdatesLogged;
+            BansLogged = s.BansLogged;
         }
     }
 }
