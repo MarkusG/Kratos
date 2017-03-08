@@ -49,7 +49,7 @@ namespace Kratos.Services
 
             var serializedConfig = JsonConvert.SerializeObject(config);
 
-            using (var configStream = File.OpenWrite(Path.Combine(Directory.GetCurrentDirectory(), "config", "ratelimit.json")))
+            using (var configStream = new FileStream(Path.Combine(Directory.GetCurrentDirectory(), "config", "ratelimit.json"), FileMode.Truncate))
             {
                 using (var configWriter = new StreamWriter(configStream))
                 {

@@ -44,7 +44,7 @@ namespace Kratos.Services
 
             var serializedConfig = JsonConvert.SerializeObject(config, Formatting.Indented);
 
-            using (var configStream = File.OpenWrite(Path.Combine(Directory.GetCurrentDirectory(), "config", "blacklist.json")))
+            using (var configStream = new FileStream(Path.Combine(Directory.GetCurrentDirectory(), "config", "blacklist.json"), FileMode.Truncate))
             {
                 using (var configWriter = new StreamWriter(configStream))
                 {

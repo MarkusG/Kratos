@@ -125,7 +125,7 @@ namespace Kratos.Services
         {
             var serializedConfig = JsonConvert.SerializeObject(Permissions, Formatting.Indented);
 
-            using (var configStream = File.OpenWrite(Path.Combine(Directory.GetCurrentDirectory(), "config", "permissions.json")))
+            using (var configStream = new FileStream(Path.Combine(Directory.GetCurrentDirectory(), "config", "permissions.json"), FileMode.Truncate))
             {
                 using (var configWriter = new StreamWriter(configStream))
                 {
