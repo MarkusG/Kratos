@@ -95,7 +95,7 @@ namespace Kratos.Modules
         [RequireCustomPermission("blacklist.manage")]
         public async Task MuteTime([Summary("hh:mm:ss")] TimeSpan time)
         {
-            _service.MuteTime = (int)time.TotalSeconds;
+            _service.MuteTime = time;
             await _service.SaveConfigurationAsync();
             await ReplyAsync(":ok:");
         }

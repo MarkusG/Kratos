@@ -20,7 +20,7 @@ namespace Kratos.Services
         private Dictionary<ulong, DateTime[]> _lastthreemessages;
 
         public int Limit { get; set; }
-        public int MuteTime { get; set; }
+        public TimeSpan MuteTime { get; set; }
         public bool IsEnabled { get; private set; }
         public List<ulong> IgnoredChannels { get; set; }
 
@@ -42,7 +42,7 @@ namespace Kratos.Services
             var config = new RatelimitConfig
             {
                 Limit = Limit,
-                MuteTime = MuteTime,
+                MuteTime = (int)MuteTime.TotalSeconds,
                 IsEnabled = IsEnabled,
                 IgnoredChannels = IgnoredChannels.ToArray()
             };
@@ -72,7 +72,7 @@ namespace Kratos.Services
                     if (config == null) return false;
 
                     Limit = config.Limit;
-                    MuteTime = config.MuteTime;
+                    MuteTime = TimeSpan.FromSeconds(config.MuteTime);
                     IsEnabled = config.IsEnabled;
                     IgnoredChannels = IgnoredChannels.ToList();
 
@@ -108,13 +108,13 @@ namespace Kratos.Services
                 await author.AddRolesAsync(muteRole);
 
                 var dmChannel = await author.GetDMChannelAsync() ?? await author.CreateDMChannelAsync();
-                await dmChannel.SendMessageAsync($"You've been muted for {TimeSpan.FromSeconds(MuteTime)} for ratelimiting: `{m.Content}`");
+                await dmChannel.SendMessageAsync($"You've been muted for {MuteTime} for ratelimiting: `{m.Content}`");
                 var name = author.Nickname == null
                     ? author.Username
                     : $"{author.Username} (nickname: {author.Nickname})";
                 await _log.LogModMessageAsync($"I automatically muted {name} for ratelimiting in {(m.Channel as ITextChannel).Mention}: `{m.Content}`");
                 var timestamp = (ulong)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
-                var unmuteAt = (ulong)DateTime.UtcNow.Add(TimeSpan.FromSeconds(MuteTime)).Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
+                var unmuteAt = (ulong)DateTime.UtcNow.Add(MuteTime).Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
                 var mute = await _records.AddMuteAsync(author.Guild.Id, author.Id, 0, timestamp, unmuteAt, "N/A (RATELIMIT AUTO-MUTE)");
                 _records.DisposeContext();
                 _unpunish.Mutes.Add(mute);

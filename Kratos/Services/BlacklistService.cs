@@ -19,7 +19,7 @@ namespace Kratos.Services
         private CoreConfig _config;
 
         public List<string> Blacklist { get; set; }
-        public int MuteTime { get; set; }
+        public TimeSpan MuteTime { get; set; }
         public bool IsEnabled { get; private set; }
 
         public void Enable()
@@ -37,7 +37,7 @@ namespace Kratos.Services
         {
             var config = new BlacklistConfig
             {
-                MuteTimeInSeconds = MuteTime,
+                MuteTimeInSeconds = (int)MuteTime.TotalSeconds,
                 Enabled = IsEnabled,
                 Blacklist = this.Blacklist.ToArray(),
             };
@@ -66,7 +66,7 @@ namespace Kratos.Services
                     var config = JsonConvert.DeserializeObject<BlacklistConfig>(serializedConfig);
                     if (config == null) return false;
 
-                    MuteTime = config.MuteTimeInSeconds;
+                    MuteTime = TimeSpan.FromSeconds(config.MuteTimeInSeconds);
                     IsEnabled = config.Enabled;
                     Blacklist = config.Blacklist.ToList();
 
@@ -90,13 +90,13 @@ namespace Kratos.Services
             await author.AddRolesAsync(muteRole);
 
             var dmChannel = await author.GetDMChannelAsync() ?? await author.CreateDMChannelAsync();
-            await dmChannel.SendMessageAsync($"You've been muted for {TimeSpan.FromSeconds(MuteTime)} for violating the world blacklist: `{m.Content}`");
+            await dmChannel.SendMessageAsync($"You've been muted for {MuteTime} for violating the world blacklist: `{m.Content}`");
             var name = author.Nickname == null
                 ? author.Username
                 : $"{author.Username} (nickname: {author.Nickname})";
             await _log.LogModMessageAsync($"I automatically muted {name} for violating the word blacklist in {(m.Channel as ITextChannel).Mention}: `{m.Content}`");
             var timestamp = (ulong)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
-            var unmuteAt = (ulong)DateTime.UtcNow.Add(TimeSpan.FromSeconds(MuteTime)).Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
+            var unmuteAt = (ulong)DateTime.UtcNow.Add(MuteTime).Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
             var mute = await _records.AddMuteAsync(guild.Id, author.Id, 0, timestamp, unmuteAt, "N/A (BLACKLIST AUTO-MUTE)");
             _records.DisposeContext();
             _unpunish.Mutes.Add(mute);
@@ -119,7 +119,7 @@ namespace Kratos.Services
             _log = l;
             _config = config;
             Blacklist = new List<string>();
-            MuteTime = 3600;
+            MuteTime = TimeSpan.FromSeconds(3600);
         }
     }
 }

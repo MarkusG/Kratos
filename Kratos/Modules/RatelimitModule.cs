@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using System.Text;
 using Discord;
 using Discord.Commands;
@@ -59,9 +60,9 @@ namespace Kratos.Modules
         [Command("setmutetime"), Alias("mutetime")]
         [Summary("Sets the time to mute for users who get ratelimited")]
         [RequireCustomPermission("ratelimit.manage")]
-        public async Task SetMuteTime([Summary("Mute time")] int timeInSeconds)
+        public async Task SetMuteTime([Summary("Mute time")] TimeSpan time)
         {
-            _service.MuteTime = timeInSeconds;
+            _service.MuteTime = time;
             await ReplyAsync(":ok:");
         }
 
