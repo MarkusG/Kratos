@@ -53,22 +53,34 @@ namespace Kratos.Modules
         }
 
         [Command("fban"), Alias("force", "forceban")]
-        [Summary("Bans a user from the server (the user does not have to be in the server)")]
+        [Summary("Bans a user from the server when the user is not present in the server.")]
         [RequireCustomPermission("mod.ban")]
         public async Task ForceBan([Summary("The ID to ban")] ulong id,
                                    [Summary("Reason for ban")] string reason = "N/A")
         {
-            if ((await Context.Guild.GetUserAsync(id)) != null)
-            {
-                await ReplyAsync(":x: User exists in server. Please use `pban` instead.");
-                return;
-            }
-
             await Context.Guild.AddBanAsync(id);
             await _records.AddPermaBanAsync(Context.Guild.Id, id, "N/A (FORCEBANNED)", Context.User.Id, (ulong)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds, reason);
             _records.DisposeContext();
             var author = Context.User as IGuildUser;
             await _log.LogModMessageAsync($"{author.Nickname ?? author.Username} forcebanned {id} for `{reason}`");
+            await ReplyAsync(":ok:");
+        }
+
+        [Command("fban"), Alias("force", "forceban")]
+        [Summary("Temporarily bans a user from the server when the user is not present in the server.")]
+        [RequireCustomPermission("mod.ban")]
+        public async Task ForceBan([Summary("The ID to ban")] ulong id,
+                                   [Summary("Time of ban")] TimeSpan time,
+                                   [Summary("Reason for ban")] string reason = "N/A")
+        {
+            await Context.Guild.AddBanAsync(id);
+            var timestamp = (ulong)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
+            var unbanAt = (ulong)DateTime.UtcNow.Add(time).Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
+            var ban = await _records.AddTempBanAsync(Context.Guild.Id, id, "N/A (FORCEBANNED)", Context.User.Id, timestamp, unbanAt, reason);
+            _unpunish.Bans.Add(ban);
+            _records.DisposeContext();
+            var author = Context.User as IGuildUser;
+            await _log.LogModMessageAsync($"{author.Nickname ?? author.Username} forcebanned {id} for {time} for `{reason}`");
             await ReplyAsync(":ok:");
         }
 

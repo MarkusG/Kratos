@@ -46,7 +46,7 @@ namespace Kratos.Services
                         ? user.Username
                         : $"{user.Username} (nickname: {user.Nickname})";
                     var timestamp = new DateTime(1970, 1, 1).AddSeconds(m.UnixTimestamp);
-                    await _log.LogModMessageAsync($":alarm_clock: {name}'s mute from {timestamp} has expired.");
+                    await _log.LogModMessageAsync($":alarm_clock: {name} ({m.SubjectId})'s mute from {timestamp} has expired.");
                     await _records.DeactivateMuteAsync(m.Key);
                     mutesToRemove.Add(m);
                 }
@@ -59,7 +59,7 @@ namespace Kratos.Services
                     var guild = _client.GetGuild(b.GuildId);
                     await guild.RemoveBanAsync(b.SubjectId);
                     var timestamp = new DateTime(1970, 1, 1).AddSeconds(b.UnixTimestamp);
-                    await _log.LogModMessageAsync($":alarm_clock: {b.SubjectName}'s ban from {timestamp} has expired.");
+                    await _log.LogModMessageAsync($":alarm_clock: {b.SubjectName} ({b.SubjectId})'s ban from {timestamp} has expired.");
                     await _records.DeactivateBanAsync(b.Key);
                     bansToRemove.Add(b);
                 }

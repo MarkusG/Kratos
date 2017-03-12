@@ -65,7 +65,7 @@ namespace Kratos.Modules
         public async Task ListPerms([Summary("Role for which to list permissions")] IRole role)
         {
             var response = new StringBuilder($"__Permissions held by {role.Name}__\n\n");
-            foreach (var p in _service.Permissions[role.Id])
+            foreach (var p in _service.Permissions[role.Id].OrderBy(p => p))
                 response.AppendLine(p);
             await ReplyAsync(response.ToString());
         }
