@@ -64,10 +64,10 @@ namespace Kratos
             _log = new LogService(_client);
             await _log.LoadConfigurationAsync();
 
-            _slowmode = new SlowmodeService(_client, _log, _config);
-
             _unpunish = new UnpunishService(_client, _blacklist, _log, _records, _config);
             await _unpunish.GetRecordsAsync();
+
+            _slowmode = new SlowmodeService(_client, _log, _unpunish, _records, _config);
 
             _ratelimit = new RatelimitService(_client, _config, _records, _unpunish, _log);
             await _ratelimit.LoadConfigurationAsync();

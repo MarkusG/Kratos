@@ -1,5 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using System.Text;
+using Discord.WebSocket;
 using Discord.Commands;
 using Kratos.Services;
 using Kratos.Preconditions;
@@ -13,45 +15,43 @@ namespace Kratos.Modules
         private SlowmodeService _service;
 
         [Command("enable")]
-        [Summary("Enable slowmode with a given interval")]
+        [Summary("Enables slowmode for the given channel with the given interval")]
         [RequireCustomPermission("slowmode.manage")]
-        public async Task Enable([Summary("Number of seconds a user must wait between sending messages")] int interval)
+        public async Task Enable([Summary("Channel for which to enable slowmode")] SocketTextChannel channel,
+                                 [Summary("Number of seconds between users being able to send messages")] int intervalInSeconds)
         {
-            if (!_service.IsEnabled)
-            {
-                _service.Enable(interval);
-                await ReplyAsync(":ok:");
-            }
-            else
-            {
-                await ReplyAsync(":x: Slowmode already enabled");
-            }
+            _service.Enable(channel, intervalInSeconds);
+            await ReplyAsync(":ok:");
         }
 
         [Command("disable")]
-        [Summary("Disable slowmode")]
+        [Summary("Disables slowmode for the given channel")]
         [RequireCustomPermission("slowmode.manage")]
-        public async Task Disable()
+        public async Task Disable([Summary("Channel for which to disable slowmode")] SocketTextChannel channel)
         {
-            if (_service.IsEnabled)
-            {
-                _service.Disable();
-                await ReplyAsync(":ok:");
-            }
-            else
-            {
-                await ReplyAsync(":x: Slowmde not enabled");
-            }
+            _service.Disable(channel);
+            await ReplyAsync(":ok:");
+        }
+
+        [Command("mutetime")]
+        [Summary("Sets the mute time for slowmode violations")]
+        [RequireCustomPermission("slowmode.manage")]
+        public async Task MuteTime([Summary("New time to mute users for slowmode violations")] TimeSpan time)
+        {
+            _service.MuteTime = time;
+            await ReplyAsync(":ok:");
         }
 
         [Command("status")]
-        [Summary("Gets current information for slowmode")]
+        [Summary("Gets current information about the current slowmode settings")]
         [RequireCustomPermission("slowmode.view")]
-        public async Task GetStatus()
+        public async Task Status()
         {
-            var response = new StringBuilder("**Slowmode Status:**\n");
-            response.AppendLine($"Enabled: {_service.IsEnabled}");
-            response.AppendLine($"Interval in seconds: {_service.IntervalInSeconds}");
+            var response = new StringBuilder($"**Slowmode settings:**\nMute Time: {_service.MuteTime}\nIntervals:\n");
+            foreach (var c in _service.Intervals)
+            {
+                response.AppendLine($"{c.Key.Mention}: {c.Value} seconds");
+            }
             await ReplyAsync(response.ToString());
         }
 

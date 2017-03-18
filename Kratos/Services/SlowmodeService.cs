@@ -12,62 +12,77 @@ namespace Kratos.Services
     {
         private DiscordSocketClient _client;
         private LogService _log;
-        private Dictionary<ulong, DateTime> _lastmessage;
+        private UnpunishService _unpunish;
+        private RecordService _records;
         private CoreConfig _config;
+        private Dictionary<ulong, Dictionary<SocketTextChannel, DateTime>> _lastMessage; // Represents the last time a user sent a message for a channel
 
-        public int IntervalInSeconds { get; set; }
-        public bool IsEnabled { get; private set; }
+        public Dictionary<SocketTextChannel, int> Intervals { get; private set; }
+        public TimeSpan MuteTime { get; set; } = TimeSpan.FromMinutes(1);
 
-        public void Enable(int interval)
+        public void Enable(SocketTextChannel channel, int interval)
         {
-            IntervalInSeconds = interval;
-            _client.MessageReceived += _client_MessageReceived_Slowmode;
-            IsEnabled = true;
+            if (Intervals.ContainsKey(channel))
+                Intervals[channel] = interval;
+            else
+                Intervals.Add(channel, interval);
         }
 
-        public void Disable()
+        public void Disable(SocketTextChannel channel)
         {
-            _client.MessageReceived -= _client_MessageReceived_Slowmode;
-            _lastmessage = null;
-            IsEnabled = false;
+            if (Intervals.ContainsKey(channel))
+                Intervals.Remove(channel);
         }
 
         private async Task _client_MessageReceived_Slowmode(SocketMessage m)
         {
-            if (m.Author.Id == _client.CurrentUser.Id) return;
-            var message = m as SocketUserMessage;
-            var author = m.Author as IGuildUser;
-            if (message == null) return;
-            if (!(message.Channel is IGuildChannel)) return;
-            var guild = (m.Channel as IGuildChannel).Guild;
+            if (m.Author.Id == _client.CurrentUser.Id) return; // Ignore messages from the bot itself
+            if (!(m.Author is SocketGuildUser author)) return; // Ignore messages that do not come from a guild
+            if (author.RoleIds.Any(x => _config.BypassIds.Contains(x))) return; // Ignore messages from privileged users
 
-            if (author.RoleIds.Any(x => _config.BypassIds.Contains(x))) return;
+            var channel = m.Channel as SocketTextChannel;
 
-            if (_lastmessage.ContainsKey(message.Author.Id))
+            if (!Intervals.ContainsKey(channel)) return; // Ignore channels for which slowmode is not enabled
+
+            var interval = Intervals[channel];
+
+            if (!_lastMessage.ContainsKey(author.Id))
             {
-                if (DateTime.UtcNow.Subtract(_lastmessage[message.Author.Id]).TotalSeconds >= IntervalInSeconds)
-                    _lastmessage[message.Author.Id] = DateTime.UtcNow;
-                else
-                {
-                    await message.DeleteAsync();
-                    var name = author.Nickname == null
-                        ? author.Username
-                        : $"{author.Username} (nickname: {author.Nickname})";
-                    await _log.LogModMessageAsync($"Automatically deleted {name}'s message in {(m.Channel as ITextChannel).Mention} for violating slowmode: `{m.Content}`");
-                }
+                var dictionary = new Dictionary<SocketTextChannel, DateTime>();
+                dictionary.Add(channel, DateTime.UtcNow);
+                _lastMessage.Add(author.Id, dictionary);
             }
             else
             {
-                _lastmessage.Add(message.Author.Id, DateTime.UtcNow);
+                if (DateTime.UtcNow.Subtract(_lastMessage[author.Id][channel]).TotalSeconds >= Intervals[channel]) // If the user's message was sent after the interval was up
+                {
+                    _lastMessage[author.Id][channel] = DateTime.UtcNow;
+                }
+                else
+                {
+                    // Delete message and mute user
+                    await m.DeleteAsync();
+                    var muteRole = author.Guild.GetRole(_config.MuteRoleId);
+                    await author.AddRolesAsync(muteRole);
+                    var unmuteAt = (ulong)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).Add(MuteTime).TotalSeconds;
+                    var mute = await _records.AddMuteAsync(author.Guild.Id, author.Id, 0, (ulong)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds, unmuteAt, "Slowmode auto-mute");
+                    _unpunish.Mutes.Add(mute);
+                    _records.DisposeContext();
+                    await _log.LogModMessageAsync($"Automatically muted {author.Nickname ?? author.Username} ({author.Id})'s message in {channel.Mention} for violating slowmode: `{m.Content}`");
+                }
             }
         }
 
-        public SlowmodeService(DiscordSocketClient c, LogService l, CoreConfig config)
+        public SlowmodeService(DiscordSocketClient c, LogService l, UnpunishService u, RecordService r, CoreConfig config)
         {
             _client = c;
+            _client.MessageReceived += _client_MessageReceived_Slowmode;
             _log = l;
+            _unpunish = u;
+            _records = r;
             _config = config;
-            _lastmessage = new Dictionary<ulong, DateTime>();
+            _lastMessage = new Dictionary<ulong, Dictionary<SocketTextChannel, DateTime>>();
+            Intervals = new Dictionary<SocketTextChannel, int>();
         }
     }
 }
