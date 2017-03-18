@@ -137,14 +137,14 @@ namespace Kratos.Services
         {
             if (ServerLogChannelId == 0) return;
             var channel = _client.GetChannel(ServerLogChannelId) as ITextChannel;
-            await channel.SendMessageAsync(message);
+            await channel.SendMessageAsync(message.Replace("@everyone", "(at)everyone").Replace("@here", "(at)here"));
         }
 
         public async Task LogModMessageAsync(string message)
         {
             if (ModLogChannelId == 0) return;
             var channel = _client.GetChannel(ModLogChannelId) as ITextChannel;
-            await channel.SendMessageAsync(message);
+            await channel.SendMessageAsync(message.Replace("@everyone", "(at)everyone").Replace("@here", "(at)here"));
         }
 
         public async Task<bool> SaveConfigurationAsync()
