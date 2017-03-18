@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace Kratos.Data
 {
@@ -13,7 +14,7 @@ namespace Kratos.Data
 
         public ulong ModeratorId { get; set; }
 
-        public ulong UnixTimestamp { get; set; }
+        public DateTime Timestamp { get; set; }
 
         public string Reason { get; set; }
     }

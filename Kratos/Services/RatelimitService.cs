@@ -113,9 +113,7 @@ namespace Kratos.Services
                     ? author.Username
                     : $"{author.Username} (nickname: {author.Nickname})";
                 await _log.LogModMessageAsync($"I automatically muted {name} for {MuteTime} ratelimiting in {(m.Channel as ITextChannel).Mention}: `{m.Content}`");
-                var timestamp = (ulong)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
-                var unmuteAt = (ulong)DateTime.UtcNow.Add(MuteTime).Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
-                var mute = await _records.AddMuteAsync(author.Guild.Id, author.Id, 0, timestamp, unmuteAt, "N/A (RATELIMIT AUTO-MUTE)");
+                var mute = await _records.AddMuteAsync(author.Guild.Id, author.Id, 0, DateTime.UtcNow, DateTime.UtcNow.Add(MuteTime), "N/A (RATELIMIT AUTO-MUTE)");
                 _records.DisposeContext();
                 _unpunish.Mutes.Add(mute);
             }

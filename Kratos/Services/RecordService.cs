@@ -15,8 +15,8 @@ namespace Kratos.Services
             ulong guildId,
             ulong subjectId,
             ulong moderatorId,
-            ulong timestamp,
-            ulong unMuteAtTimestamp,
+            DateTime timestamp,
+            DateTime unMuteAtTimestamp,
             string reason)
         {
             if (_db == null)
@@ -28,8 +28,8 @@ namespace Kratos.Services
                 GuildId = guildId,
                 SubjectId = subjectId,
                 ModeratorId = moderatorId,
-                UnixTimestamp = timestamp,
-                UnmuteAtUnixTimestamp = unMuteAtTimestamp,
+                Timestamp = timestamp,
+                UnmuteAt = unMuteAtTimestamp,
                 Reason = reason
             });
 
@@ -42,7 +42,7 @@ namespace Kratos.Services
             ulong subjectId,
             string subjectName,
             ulong moderatorId,
-            ulong timestamp,
+            DateTime timestamp,
             string reason)
         {
             if (_db == null)
@@ -54,7 +54,7 @@ namespace Kratos.Services
                 SubjectId = subjectId,
                 SubjectName = subjectName,
                 ModeratorId = moderatorId,
-                UnixTimestamp = timestamp,
+                Timestamp = timestamp,
                 Reason = reason
             });
 
@@ -67,8 +67,8 @@ namespace Kratos.Services
             ulong subjectId,
             string subjectName,
             ulong moderatorId,
-            ulong timestamp,
-            ulong unBanAtTimestamp,
+            DateTime timestamp,
+            DateTime unBanAtTimestamp,
             string reason)
         {
             if (_db == null)
@@ -81,8 +81,8 @@ namespace Kratos.Services
                 SubjectId = subjectId,
                 SubjectName = subjectName,
                 ModeratorId = moderatorId,
-                UnixTimestamp = timestamp,
-                UnbanAtUnixTimestamp = unBanAtTimestamp,
+                Timestamp = timestamp,
+                UnbanAt = unBanAtTimestamp,
                 Reason = reason
             });
 
@@ -95,7 +95,7 @@ namespace Kratos.Services
             ulong subjectId,
             string subjectName,
             ulong moderatorId,
-            ulong timestamp,
+            DateTime timestamp,
             string reason)
         {
             if (_db == null)
@@ -107,7 +107,7 @@ namespace Kratos.Services
                 SubjectId = subjectId,
                 SubjectName = subjectName,
                 ModeratorId = moderatorId,
-                UnixTimestamp = timestamp,
+                Timestamp = timestamp,
                 Reason = reason
             });
 
@@ -140,7 +140,7 @@ namespace Kratos.Services
             if (_db == null)
                 _db = new RecordContext();
             await _db.Database.EnsureCreatedAsync();
-            return _db.TempBans.Where(x => DateTime.Compare(DateTime.UtcNow, new DateTime(1970, 1, 1).AddSeconds(x.UnbanAtUnixTimestamp)) > 0 && x.Active);
+            return _db.TempBans.Where(x => DateTime.Compare(DateTime.UtcNow, x.UnbanAt) > 0 && x.Active);
         }
 
         public async Task<IEnumerable<Mute>> GetActiveMutesAsync()
@@ -148,7 +148,7 @@ namespace Kratos.Services
             if (_db == null)
                 _db = new RecordContext();
             await _db.Database.EnsureCreatedAsync();
-            return _db.Mutes.Where(x => DateTime.Compare(DateTime.UtcNow, new DateTime(1970, 1, 1).AddSeconds(x.UnmuteAtUnixTimestamp)) > 0 && x.Active);
+            return _db.Mutes.Where(x => DateTime.Compare(DateTime.UtcNow, x.UnmuteAt) > 0 && x.Active);
         }
 
         public void DisposeContext()

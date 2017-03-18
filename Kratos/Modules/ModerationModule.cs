@@ -45,8 +45,7 @@ namespace Kratos.Modules
             var name = user.Nickname == null
                 ? user.Username
                 : $"{user.Username} (nickname: {user.Nickname})";
-            var timestamp = (ulong)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
-            await _records.AddPermaBanAsync(Context.Guild.Id, user.Id, name, Context.User.Id, timestamp, reason);
+            await _records.AddPermaBanAsync(Context.Guild.Id, user.Id, name, Context.User.Id, DateTime.UtcNow, reason);
             _records.DisposeContext();
             await _log.LogModMessageAsync($"{author.Nickname ?? author.Username} permabanned {name} for `{reason}`");
             await ReplyAsync(":ok:");
@@ -59,7 +58,7 @@ namespace Kratos.Modules
                                    [Summary("Reason for ban")] string reason = "N/A")
         {
             await Context.Guild.AddBanAsync(id);
-            await _records.AddPermaBanAsync(Context.Guild.Id, id, "N/A (FORCEBANNED)", Context.User.Id, (ulong)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds, reason);
+            await _records.AddPermaBanAsync(Context.Guild.Id, id, "N/A (FORCEBANNED)", Context.User.Id, DateTime.UtcNow, reason);
             _records.DisposeContext();
             var author = Context.User as IGuildUser;
             await _log.LogModMessageAsync($"{author.Nickname ?? author.Username} forcebanned {id} for `{reason}`");
@@ -74,9 +73,7 @@ namespace Kratos.Modules
                                    [Summary("Reason for ban")] string reason = "N/A")
         {
             await Context.Guild.AddBanAsync(id);
-            var timestamp = (ulong)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
-            var unbanAt = (ulong)DateTime.UtcNow.Add(time).Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
-            var ban = await _records.AddTempBanAsync(Context.Guild.Id, id, "N/A (FORCEBANNED)", Context.User.Id, timestamp, unbanAt, reason);
+            var ban = await _records.AddTempBanAsync(Context.Guild.Id, id, "N/A (FORCEBANNED)", Context.User.Id, DateTime.UtcNow, DateTime.UtcNow.Add(time), reason);
             _unpunish.Bans.Add(ban);
             _records.DisposeContext();
             var author = Context.User as IGuildUser;
@@ -133,9 +130,7 @@ namespace Kratos.Modules
             var name = user.Nickname == null
                 ? user.Username
                 : $"{user.Username} (nickname: {user.Nickname})";
-            var timestamp = (ulong)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
-            var unbanAt = (ulong)DateTime.UtcNow.Add(time).Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
-            var ban = await _records.AddTempBanAsync(Context.Guild.Id, user.Id, name, Context.User.Id, timestamp, unbanAt, reason);
+            var ban = await _records.AddTempBanAsync(Context.Guild.Id, user.Id, name, Context.User.Id, DateTime.UtcNow, DateTime.UtcNow.Add(time), reason);
             _records.DisposeContext();
             _unpunish.Bans.Add(ban);
             await _log.LogModMessageAsync($"{author.Nickname ?? author.Username} temp banned {user.Username} for {time} for `{reason}`");
@@ -168,8 +163,7 @@ namespace Kratos.Modules
             var name = user.Nickname == null
                 ? user.Username
                 : $"{user.Username} (nickname: {user.Nickname})";
-            var timestamp = (ulong)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
-            await _records.AddSoftBanAsync(Context.Guild.Id, user.Id, name, Context.User.Id, timestamp, reason);
+            await _records.AddSoftBanAsync(Context.Guild.Id, user.Id, name, Context.User.Id, DateTime.UtcNow, reason);
             _records.DisposeContext();
             await _log.LogModMessageAsync($"{author.Nickname ?? author.Username} softbanned {name} for `{reason}`");
             await ReplyAsync(":ok:");
@@ -199,9 +193,7 @@ namespace Kratos.Modules
 
             var muteRole = Context.Guild.GetRole(_config.MuteRoleId);
             await user.AddRolesAsync(muteRole);
-            var timestamp = (ulong)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
-            var unmuteAt = (ulong)DateTime.UtcNow.Add(time).Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
-            var mute = await _records.AddMuteAsync(Context.Guild.Id, user.Id, Context.User.Id, timestamp, unmuteAt, reason);
+            var mute = await _records.AddMuteAsync(Context.Guild.Id, user.Id, Context.User.Id, DateTime.UtcNow, DateTime.UtcNow.Add(time), reason);
             _records.DisposeContext();
             _unpunish.Mutes.Add(mute);
             await ReplyAsync(":ok:");

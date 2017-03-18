@@ -35,7 +35,7 @@ namespace Kratos.Services
             {
                 await Task.Delay(3000);
                 var mutesToRemove = new List<Mute>();
-                foreach (var m in Mutes.Where(x => DateTime.Compare(DateTime.UtcNow, new DateTime(1970, 1, 1).AddSeconds(x.UnmuteAtUnixTimestamp)) > 0 && x.Active))
+                foreach (var m in Mutes.Where(x => DateTime.Compare(DateTime.UtcNow, x.UnmuteAt) > 0 && x.Active))
                 {
                     var guild = _client.GetGuild(m.GuildId);
                     var user = guild.GetUser(m.SubjectId);
@@ -45,8 +45,7 @@ namespace Kratos.Services
                     var name = user.Nickname == null
                         ? user.Username
                         : $"{user.Username} (nickname: {user.Nickname})";
-                    var timestamp = new DateTime(1970, 1, 1).AddSeconds(m.UnixTimestamp);
-                    await _log.LogModMessageAsync($":alarm_clock: {name} ({m.SubjectId})'s mute from {timestamp} has expired.");
+                    await _log.LogModMessageAsync($":alarm_clock: {name} ({m.SubjectId})'s mute from {m.Timestamp} has expired.");
                     await _records.DeactivateMuteAsync(m.Key);
                     mutesToRemove.Add(m);
                 }
@@ -54,12 +53,11 @@ namespace Kratos.Services
                     Mutes.Remove(m);
 
                 var bansToRemove = new List<TempBan>();
-                foreach (var b in Bans.Where(x => DateTime.Compare(DateTime.UtcNow, new DateTime(1970, 1, 1).AddSeconds(x.UnbanAtUnixTimestamp)) > 0 && x.Active))
+                foreach (var b in Bans.Where(x => DateTime.Compare(DateTime.UtcNow, x.UnbanAt) > 0 && x.Active))
                 {
                     var guild = _client.GetGuild(b.GuildId);
                     await guild.RemoveBanAsync(b.SubjectId);
-                    var timestamp = new DateTime(1970, 1, 1).AddSeconds(b.UnixTimestamp);
-                    await _log.LogModMessageAsync($":alarm_clock: {b.SubjectName} ({b.SubjectId})'s ban from {timestamp} has expired.");
+                    await _log.LogModMessageAsync($":alarm_clock: {b.SubjectName} ({b.SubjectId})'s ban from {b.Timestamp} has expired.");
                     await _records.DeactivateBanAsync(b.Key);
                     bansToRemove.Add(b);
                 }

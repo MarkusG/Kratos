@@ -14,7 +14,7 @@ namespace Kratos
     {
         static void Main(string[] args) => new Program().Start().GetAwaiter().GetResult();
 
-        public const string Version = "build 028";
+        public const string Version = "build 029";
 
         #region Private fields
         private DiscordSocketClient _client;
