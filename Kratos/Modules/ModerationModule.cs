@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using System.Linq;
 using Discord;
+using Discord.WebSocket;
 using Discord.Commands;
 using Kratos.Preconditions;
 using Kratos.Services;
@@ -23,17 +24,13 @@ namespace Kratos.Modules
         [Command("pban"), Alias("perm", "perma", "permban", "permaban")]
         [Summary("Permanently bans a user from the server.")]
         [RequireCustomPermission("mod.ban")]
-        public async Task PermaBan([Summary("The user to ban")] IGuildUser user,
+        public async Task PermaBan([Summary("The user to ban")] SocketGuildUser user,
                                    [Summary("Reason for ban")] string reason,
                                    [Summary("Number of days for which to prune the user's messages")] int pruneDays = 0)
         {
-            var author = Context.User as IGuildUser;
-            var authorsHighestRole = author.RoleIds.Select(x => Context.Guild.GetRole(x))
-                                                   .OrderByDescending(x => x.Position)
-                                                   .First();
-            var usersHighestRole = user.RoleIds.Select(x => Context.Guild.GetRole(x))
-                                               .OrderByDescending(x => x.Position)
-                                               .First();
+            var author = Context.User as SocketGuildUser;
+            var authorsHighestRole = author.Roles.OrderByDescending(x => x.Position).First();
+            var usersHighestRole = user.Roles.OrderByDescending(x => x.Position).First();
 
             if (usersHighestRole.Position >= authorsHighestRole.Position)
             {
@@ -60,7 +57,7 @@ namespace Kratos.Modules
             await Context.Guild.AddBanAsync(id);
             await _records.AddPermaBanAsync(Context.Guild.Id, id, "N/A (FORCEBANNED)", Context.User.Id, DateTime.UtcNow, reason);
             _records.DisposeContext();
-            var author = Context.User as IGuildUser;
+            var author = Context.User as SocketGuildUser;
             await _log.LogModMessageAsync($"{author.Nickname ?? author.Username} forcebanned {id} for `{reason}`");
             await ReplyAsync(":ok:");
         }
@@ -76,7 +73,7 @@ namespace Kratos.Modules
             var ban = await _records.AddTempBanAsync(Context.Guild.Id, id, "N/A (FORCEBANNED)", Context.User.Id, DateTime.UtcNow, DateTime.UtcNow.Add(time), reason);
             _unpunish.Bans.Add(ban);
             _records.DisposeContext();
-            var author = Context.User as IGuildUser;
+            var author = Context.User as SocketGuildUser;
             await _log.LogModMessageAsync($"{author.Nickname ?? author.Username} forcebanned {id} for {time} for `{reason}`");
             await ReplyAsync(":ok:");
         }
@@ -99,7 +96,7 @@ namespace Kratos.Modules
         //        await _records.AddPermaBanAsync(Context.Guild.Id, id, "N/A (FORCEBANNED)", Context.User.Id, (ulong)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds, reason);
         //    }
         //    _records.DisposeContext();
-        //    var author = Context.User as IGuildUser;
+        //    var author = Context.User as SocketGuildUser;
         //    await _log.LogModMessageAsync($"{author.Nickname ?? author.Username} forcebanned {string.Join(", ", ids)} for `{reason}`");
         //    await ReplyAsync(":ok:");
         //}
@@ -107,18 +104,14 @@ namespace Kratos.Modules
         [Command("tban"), Alias("temp", "tempban")]
         [Summary("Temporarily bans a user from the server.")]
         [RequireCustomPermission("mod.ban")]
-        public async Task TempBan([Summary("The user to ban")] IGuildUser user,
+        public async Task TempBan([Summary("The user to ban")] SocketGuildUser user,
                                   [Summary("The time to ban (hh:mm:ss)")] TimeSpan time,
                                   [Summary("Reason for ban")] string reason,
                                   [Summary("Number of days for which to prune the user's messages")] int pruneDays = 0)
         {
-            var author = Context.User as IGuildUser;
-            var authorsHighestRole = author.RoleIds.Select(x => Context.Guild.GetRole(x))
-                                                   .OrderByDescending(x => x.Position)
-                                                   .First();
-            var usersHighestRole = user.RoleIds.Select(x => Context.Guild.GetRole(x))
-                                               .OrderByDescending(x => x.Position)
-                                               .First();
+            var author = Context.User as SocketGuildUser;
+            var authorsHighestRole = author.Roles.OrderByDescending(x => x.Position).First();
+            var usersHighestRole = user.Roles.OrderByDescending(x => x.Position).First();
 
             if (usersHighestRole.Position >= authorsHighestRole.Position)
             {
@@ -140,17 +133,13 @@ namespace Kratos.Modules
         [Command("sban"), Alias("soft", "softban")]
         [Summary("Bans a user and immediately unbans them.")]
         [RequireCustomPermission("mod.softban")]
-        public async Task SoftBan([Summary("The user to softban")] IGuildUser user,
+        public async Task SoftBan([Summary("The user to softban")] SocketGuildUser user,
                                   [Summary("Reason for softban")] string reason,
                                   [Summary("Number of days for which to prune the user's messages")] int pruneDays = 0)
         {
-            var author = Context.User as IGuildUser;
-            var authorsHighestRole = author.RoleIds.Select(x => Context.Guild.GetRole(x))
-                                                   .OrderByDescending(x => x.Position)
-                                                   .First();
-            var usersHighestRole = user.RoleIds.Select(x => Context.Guild.GetRole(x))
-                                               .OrderByDescending(x => x.Position)
-                                               .First();
+            var author = Context.User as SocketGuildUser;
+            var authorsHighestRole = author.Roles.OrderByDescending(x => x.Position).First();
+            var usersHighestRole = user.Roles.OrderByDescending(x => x.Position).First();
 
             if (usersHighestRole.Position >= authorsHighestRole.Position)
             {
@@ -173,17 +162,13 @@ namespace Kratos.Modules
         [Command("mute")]
         [Summary("Mutes a user for a given amount of time.")]
         [RequireCustomPermission("mod.mute")]
-        public async Task Mute([Summary("The user to mute")] IGuildUser user,
+        public async Task Mute([Summary("The user to mute")] SocketGuildUser user,
                                [Summary("The time to mute (hh:mm:ss)")] TimeSpan time,
                                [Summary("Reason for muting")] string reason)
         {
-            var author = Context.User as IGuildUser;
-            var authorsHighestRole = author.RoleIds.Select(x => Context.Guild.GetRole(x))
-                                                   .OrderByDescending(x => x.Position)
-                                                   .First();
-            var usersHighestRole = user.RoleIds.Select(x => Context.Guild.GetRole(x))
-                                               .OrderByDescending(x => x.Position)
-                                               .First();
+            var author = Context.User as SocketGuildUser;
+            var authorsHighestRole = author.Roles.OrderByDescending(x => x.Position).First();
+            var usersHighestRole = user.Roles.OrderByDescending(x => x.Position).First();
 
             if (usersHighestRole.Position >= authorsHighestRole.Position)
             {
@@ -192,7 +177,7 @@ namespace Kratos.Modules
             }
 
             var muteRole = Context.Guild.GetRole(_config.MuteRoleId);
-            await user.AddRolesAsync(muteRole);
+            await user.AddRolesAsync(new IRole[] { muteRole });
             var mute = await _records.AddMuteAsync(Context.Guild.Id, user.Id, Context.User.Id, DateTime.UtcNow, DateTime.UtcNow.Add(time), reason);
             _records.DisposeContext();
             _unpunish.Mutes.Add(mute);
@@ -209,11 +194,11 @@ namespace Kratos.Modules
                 await ReplyAsync("Specified number exceeds the 99 message limit.");
                 return;
             }
-            var channel = Context.Channel as ITextChannel;
+            var channel = Context.Channel as SocketTextChannel;
             var messagesToDelete = await channel.GetMessagesAsync(num + 1).Flatten();
             await channel.DeleteMessagesAsync(messagesToDelete);
-            var author = Context.User as IGuildUser;
-            await _log.LogModMessageAsync($"{author.Nickname ?? author.Username} cleaned {num} messages in {(Context.Channel as ITextChannel).Mention}");
+            var author = Context.User as SocketGuildUser;
+            await _log.LogModMessageAsync($"{author.Nickname ?? author.Username} cleaned {num} messages in {(Context.Channel as SocketTextChannel).Mention}");
         }
 
         public ModerationModule(RecordService r, UnpunishService u, BlacklistService b, LogService l, CoreConfig config)

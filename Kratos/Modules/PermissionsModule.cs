@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using System.Text;
-using Discord;
+using Discord.WebSocket;
 using Discord.Commands;
 using Kratos.Preconditions;
 using Kratos.Services;
@@ -18,7 +18,7 @@ namespace Kratos.Modules
         [Command("addperm"), Alias("+")]
         [Summary("Add a permission to a role.")]
         [RequireCustomPermission("permissions.manage")]
-        public async Task AddPerm([Summary("Role to which to add the permission")] IRole role,
+        public async Task AddPerm([Summary("Role to which to add the permission")] SocketRole role,
                                   [Summary("Permission to be added")] string permission)
         {
             var result = _service.AddPermission(role, permission);
@@ -40,7 +40,7 @@ namespace Kratos.Modules
         [Command("removeperm"), Alias("-")]
         [Summary("Removes a permission from a role.")]
         [RequireCustomPermission("permissions.manage")]
-        public async Task RemovePerm([Summary("Role from which to remove the permission")] IRole role,
+        public async Task RemovePerm([Summary("Role from which to remove the permission")] SocketRole role,
                                      [Summary("Permission to removed")] string permission)
         {
             var result = _service.RemovePermission(role, permission);
@@ -62,7 +62,7 @@ namespace Kratos.Modules
         [Command("list")]
         [Summary("Lists all permissions held by a role.")]
         [RequireCustomPermission("permissions.view")]
-        public async Task ListPerms([Summary("Role for which to list permissions")] IRole role)
+        public async Task ListPerms([Summary("Role for which to list permissions")] SocketRole role)
         {
             var response = new StringBuilder($"__Permissions held by {role.Name}__\n\n");
             foreach (var p in _service.Permissions[role.Id].OrderBy(p => p))

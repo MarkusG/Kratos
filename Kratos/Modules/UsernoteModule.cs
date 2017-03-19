@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Discord;
+using Discord.WebSocket;
 using Discord.Commands;
 using Kratos.Preconditions;
 using Kratos.Services;
@@ -16,7 +17,7 @@ namespace Kratos.Modules
         [Command("add"), Alias("+")]
         [Summary("Add a usernote")]
         [RequireCustomPermission("usernotes.add")]
-        public async Task Add([Summary("User on which the note will be added")] IUser user,
+        public async Task Add([Summary("User on which the note will be added")] SocketUser user,
                               [Summary("Content of the note"), Remainder] string content)
         {
             await _service.AddNoteAsync(user.Id, Context.User.Id, (ulong)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds, content);
@@ -26,7 +27,7 @@ namespace Kratos.Modules
         [Command("get"), Alias("<")]
         [Summary("Get all usernotes for a given user")]
         [RequireCustomPermission("usernotes.view")]
-        public async Task Get([Summary("User for which to get notes")] IGuildUser user)
+        public async Task Get([Summary("User for which to get notes")] SocketGuildUser user)
         {
             var notes = await _service.GetNotesForUserAsync(user.Id);
             var name = user.Nickname == null
@@ -47,9 +48,9 @@ namespace Kratos.Modules
                 .WithAuthor(x =>
                 {
                     x.Name = name;
-                    x.IconUrl = user.AvatarUrl;
+                    x.IconUrl = user.GetAvatarUrl();
                 })
-                .WithThumbnailUrl(user.AvatarUrl);
+                .WithThumbnailUrl(user.GetAvatarUrl());
 
             foreach (var n in notes)
             {
@@ -137,7 +138,7 @@ namespace Kratos.Modules
         [Command("clear"), Alias("--")]
         [Summary("Clear all usernotes for a given user")]
         [RequireCustomPermission("usernotes.remove")]
-        public async Task Clear([Summary("User on which to clear all notes")] IGuildUser user)
+        public async Task Clear([Summary("User on which to clear all notes")] SocketGuildUser user)
         {
             await _service.ClearNotesAsync(user.Id);
             _service.DisposeContext();

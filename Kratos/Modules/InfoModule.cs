@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Text;
 using System.Linq;
@@ -20,11 +19,11 @@ namespace Kratos.Modules
         [Command("user")]
         [Summary("Get information about a user")]
         [RequireCustomPermission("info.user")]
-        public async Task UserInfo([Summary("User for which to get information")] IGuildUser user)
+        public async Task UserInfo([Summary("User for which to get information")] SocketGuildUser user)
         {
             var response = new EmbedBuilder()
                 .WithTitle($"Userinfo for {user.Username}#{user.Discriminator}")
-                .WithThumbnailUrl(user.AvatarUrl)
+                .WithThumbnailUrl(user.GetAvatarUrl())
                 .AddField(x =>
                 {
                     x.IsInline = true;
@@ -76,7 +75,7 @@ namespace Kratos.Modules
                 {
                     x.IsInline = false;
                     x.Name = "Roles";
-                    x.Value = user.RoleIds.Select(r => user.Guild.GetRole(r).Name).Aggregate((b, a) => $"{b}, {a}");
+                    x.Value = user.Roles.Select(r => r.Name).Aggregate((b, a) => $"{b}, {a}");
                 });
             await ReplyAsync("", embed: response);
         }

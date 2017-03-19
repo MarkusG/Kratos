@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 using System.Text;
-using Discord;
+using Discord.WebSocket;
 using Discord.Commands;
 using Kratos.Preconditions;
 using Kratos.Services;
@@ -17,7 +17,7 @@ namespace Kratos.Modules
         [Command("modchannel")]
         [Summary("Set the mod log channel")]
         [RequireCustomPermission("log.manage")]
-        public async Task SetModLogChannel([Summary("Channel to which to set the mod log")] ITextChannel channel)
+        public async Task SetModLogChannel([Summary("Channel to which to set the mod log")] SocketTextChannel channel)
         {
             _log.ModLogChannelId = channel.Id;
             await _log.SaveConfigurationAsync();
@@ -27,7 +27,7 @@ namespace Kratos.Modules
         [Command("serverchannel")]
         [Summary("Set the server log channel")]
         [RequireCustomPermission("log.manage")]
-        public async Task SetServerLogChannel([Summary("Channel to which to set the server log")] ITextChannel channel)
+        public async Task SetServerLogChannel([Summary("Channel to which to set the server log")] SocketTextChannel channel)
         {
             _log.ServerLogChannelId = channel.Id;
             await _log.SaveConfigurationAsync();

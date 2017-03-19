@@ -1,16 +1,15 @@
-﻿using System;
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Linq;
 using System.Text;
 using System.IO;
 using System.Threading.Tasks;
-using System.Diagnostics;
 using Discord;
 using Discord.WebSocket;
 using Discord.Commands;
 using Kratos.Services;
 using Kratos.Configs;
 using Kratos.Preconditions;
+using System;
 
 namespace Kratos.Modules
 {
@@ -85,7 +84,7 @@ namespace Kratos.Modules
         [Command("setmuterole"), Alias("smr")]
         [Summary("Sets the mute role")]
         [RequireCustomPermission("core.manage")]
-        public async Task SetMuteRole([Summary("Self-explanatory")] IRole role)
+        public async Task SetMuteRole([Summary("Self-explanatory")] SocketRole role)
         {
             _config.MuteRoleId = role.Id;
             await _config.SaveAsync();
@@ -95,7 +94,7 @@ namespace Kratos.Modules
         [Command("addbypassrole"), Alias("abp")]
         [Summary("Adds a role for which the bot will ignore active protection")]
         [RequireCustomPermission("core.manage")]
-        public async Task AddBypassRole([Summary("The role to add to the ignore list")] IRole role)
+        public async Task AddBypassRole([Summary("The role to add to the ignore list")] SocketRole role)
         {
             if (!_config.BypassIds.Contains(role.Id))
             {
@@ -110,7 +109,7 @@ namespace Kratos.Modules
         [Command("removebypassrole"), Alias("rbp")]
         [Summary("Removes a role for which the bot will ignore active protection")]
         [RequireCustomPermission("core.manage")]
-        public async Task RemoveBypassRole([Summary("The role to remove from the ignore list")] IRole role)
+        public async Task RemoveBypassRole([Summary("The role to remove from the ignore list")] SocketRole role)
         {
             if (_config.BypassIds.Contains(role.Id))
             {
@@ -158,6 +157,17 @@ namespace Kratos.Modules
         {
             await _client.CurrentUser.ModifyAsync(x => x.Username = content);
             await ReplyAsync(":ok:");
+        }
+
+        [Command("shutdown", RunMode = RunMode.Async)]
+        [Summary("Disconnects and shuts down the bot")]
+        [RequireCustomPermission("core.shutdown")]
+        public async Task Shutdown()
+        {
+            await _client.SetStatusAsync(UserStatus.Invisible);
+            await ReplyAsync(":ok:");
+            await _client.StopAsync();
+            Environment.Exit(0);
         }
 
         public CoreModule(DiscordSocketClient c, CommandService s, BlacklistService b, CoreConfig config)

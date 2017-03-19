@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Discord;
+using Discord.WebSocket;
 using Discord.Commands;
 using Kratos.Services;
 using Kratos.Configs;
@@ -22,10 +22,10 @@ namespace Kratos.Preconditions
             var service = map.Get<PermissionsService>();
             var config = map.Get<CoreConfig>();
             bool hasPermission = false;
-            foreach (var r in (context.User as IGuildUser).RoleIds)
+            foreach (var r in (context.User as SocketGuildUser).Roles)
             {
-                if (!service.Permissions.ContainsKey(r)) continue; 
-                if (service.Permissions[r].Contains(Permission))
+                if (!service.Permissions.ContainsKey(r.Id)) continue; 
+                if (service.Permissions[r.Id].Contains(Permission))
                     hasPermission = true;
             }
             if (context.User.Id == config.MasterId) hasPermission = true;

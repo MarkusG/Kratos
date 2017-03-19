@@ -38,7 +38,7 @@ namespace Kratos.Services
         {
             if (m.Author.Id == _client.CurrentUser.Id) return; // Ignore messages from the bot itself
             if (!(m.Author is SocketGuildUser author)) return; // Ignore messages that do not come from a guild
-            if (author.RoleIds.Any(x => _config.BypassIds.Contains(x))) return; // Ignore messages from privileged users
+            if (author.Roles.Select(r => r.Id).Any(x => _config.BypassIds.Contains(x))) return; // Ignore messages from privileged users
 
             var channel = m.Channel as SocketTextChannel;
 
@@ -63,7 +63,7 @@ namespace Kratos.Services
                     // Delete message and mute user
                     await m.DeleteAsync();
                     var muteRole = author.Guild.GetRole(_config.MuteRoleId);
-                    await author.AddRolesAsync(muteRole);
+                    await author.AddRolesAsync(new SocketRole[] { muteRole });
                     var mute = await _records.AddMuteAsync(author.Guild.Id, author.Id, 0, DateTime.UtcNow, DateTime.UtcNow.Add(MuteTime), "Slowmode auto-mute");
                     _unpunish.Mutes.Add(mute);
                     _records.DisposeContext();

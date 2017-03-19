@@ -41,7 +41,7 @@ namespace Kratos.Services
                     var user = guild.GetUser(m.SubjectId);
 
                     var role = guild.GetRole(_config.MuteRoleId);
-                    await user.RemoveRolesAsync(role);
+                    await user.RemoveRolesAsync(new SocketRole[] { role });
                     var name = user.Nickname == null
                         ? user.Username
                         : $"{user.Username} (nickname: {user.Nickname})";

@@ -14,7 +14,7 @@ namespace Kratos
     {
         static void Main(string[] args) => new Program().Start().GetAwaiter().GetResult();
 
-        public const string Version = "build 030";
+        public const string Version = "build 032";
 
         #region Private fields
         private DiscordSocketClient _client;
@@ -103,7 +103,7 @@ namespace Kratos
 
             // Connect to Discord
             await _client.LoginAsync(TokenType.Bot, _config.Token);
-            await _client.ConnectAsync();
+            await _client.StartAsync();
 
             // Start unpunisher loop
             await _unpunish.StartAsync();

@@ -136,14 +136,14 @@ namespace Kratos.Services
         public async Task LogServerMessageAsync(string message)
         {
             if (ServerLogChannelId == 0) return;
-            var channel = _client.GetChannel(ServerLogChannelId) as ITextChannel;
+            var channel = _client.GetChannel(ServerLogChannelId) as SocketTextChannel;
             await channel.SendMessageAsync(message.Replace("@everyone", "(at)everyone").Replace("@here", "(at)here"));
         }
 
         public async Task LogModMessageAsync(string message)
         {
             if (ModLogChannelId == 0) return;
-            var channel = _client.GetChannel(ModLogChannelId) as ITextChannel;
+            var channel = _client.GetChannel(ModLogChannelId) as SocketTextChannel;
             await channel.SendMessageAsync(message.Replace("@everyone", "(at)everyone").Replace("@here", "(at)here"));
         }
 
@@ -200,26 +200,26 @@ namespace Kratos.Services
         }
 
         #region Server Log Event Handlers
-        private async Task _client_MessageUpdated(Optional<SocketMessage> b, SocketMessage a)
+        private async Task _client_MessageUpdated(Cacheable<IMessage, ulong> b, SocketMessage a, ISocketMessageChannel channel)
         {
             if (a.Id == _client.CurrentUser.Id) return;
 
-            var before = b.GetValueOrDefault();
+            var before = await b.GetOrDownloadAsync();
             if (before == null) return;
-            var author = a.Author as IGuildUser;
+            var author = a.Author as SocketGuildUser;
             if (author == null) return;
-            await LogServerMessageAsync($"{author.Nickname ?? author.Username}#{author.Discriminator} ({author.Id}) edited their message in {(a.Channel as ITextChannel).Mention}:\n" +
+            await LogServerMessageAsync($"{author.Nickname ?? author.Username}#{author.Discriminator} ({author.Id}) edited their message in {(a.Channel as SocketTextChannel).Mention}:\n" +
                                         $"Before: `{before.Content}`\n" + 
                                         $"After: `{a.Content}`");
         }
 
-        private async Task _client_MessageDeleted(ulong id, Optional<SocketMessage> m)
+        private async Task _client_MessageDeleted(Cacheable<IMessage, ulong> m, ISocketMessageChannel channel)
         {
-            var message = m.GetValueOrDefault();
+            var message = await m.GetOrDownloadAsync();
             if (message == null) return;
-            var author = message.Author as IGuildUser;
+            var author = message.Author as SocketGuildUser;
             if (author == null) return;
-            await LogServerMessageAsync($"{author.Nickname ?? author.Username}#{author.Discriminator} ({author.Id})'s message was deleted in {(message.Channel as ITextChannel).Mention}:\n" +
+            await LogServerMessageAsync($"{author.Nickname ?? author.Username}#{author.Discriminator} ({author.Id})'s message was deleted in {(message.Channel as SocketTextChannel).Mention}:\n" +
                                         $"`{message.Content}`");
         }
 
@@ -253,17 +253,17 @@ namespace Kratos.Services
 
         private async Task _client_GuildMemberUpdated_RoleChange(SocketGuildUser b, SocketGuildUser a)
         {
-            if (b.RoleIds == a.RoleIds) return;
+            if (b.Roles == a.Roles) return;
             var guild = (_client.GetChannel(ServerLogChannelId) as SocketGuildChannel).Guild;
-            if (b.RoleIds.Count > a.RoleIds.Count)
+            if (b.Roles.Count() > a.Roles.Count())
             {
-                var roleId = b.RoleIds.Except(a.RoleIds).FirstOrDefault();
-                await LogServerMessageAsync($"{b.Nickname ?? b.Username}#{b.Discriminator} ({b.Id}) has lost role: {guild.GetRole(roleId).Name}");
+                var role = b.Roles.Except(a.Roles).FirstOrDefault();
+                await LogServerMessageAsync($"{b.Nickname ?? b.Username}#{b.Discriminator} ({b.Id}) has lost role: {role.Name}");
             }
             else
             {
-                var roleId = a.RoleIds.Except(b.RoleIds).FirstOrDefault();
-                await LogServerMessageAsync($"{b.Nickname ?? b.Username}#{b.Discriminator} ({b.Id}) has gained role: {guild.GetRole(roleId).Name}");
+                var role = a.Roles.Except(b.Roles).FirstOrDefault();
+                await LogServerMessageAsync($"{b.Nickname ?? b.Username}#{b.Discriminator} ({b.Id}) has gained role: {role.Name}");
             }
         }
 

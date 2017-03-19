@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
-using Discord;
+using Discord.WebSocket;
 using Kratos.Services.Results;
 
 namespace Kratos.Services
@@ -14,7 +14,7 @@ namespace Kratos.Services
         public List<string> AllPermissions { get; set; }
         public Dictionary<ulong, List<string>> Permissions { get; set; }
 
-        public Result AddPermission(IRole role, string perm)
+        public Result AddPermission(SocketRole role, string perm)
         {
             bool containsRole = Permissions.ContainsKey(role.Id);
             if (!AllPermissions.Contains(perm))
@@ -32,7 +32,7 @@ namespace Kratos.Services
             return new Result { Type = ResultType.Success };
         }
 
-        public PermissionRangeResult AddPermissions(IRole role, params string[] perms)
+        public PermissionRangeResult AddPermissions(SocketRole role, params string[] perms)
         {
             var failures = new List<string>();
             var warnings = new List<string>();
@@ -72,7 +72,7 @@ namespace Kratos.Services
             };
         }
 
-        public Result RemovePermission(IRole role, string perm)
+        public Result RemovePermission(SocketRole role, string perm)
         {
             if (!Permissions.ContainsKey(role.Id)) return new Result { Type = ResultType.Warning, Info = "Role has no permissions." };
             if (!Permissions[role.Id].Contains(perm)) return new Result { Type = ResultType.Warning, Info = "Role does not have permission." };
@@ -80,7 +80,7 @@ namespace Kratos.Services
             return new Result { Type = ResultType.Success };
         }
 
-        public PermissionRangeResult RemovePermissions(IRole role, params string[] perms)
+        public PermissionRangeResult RemovePermissions(SocketRole role, params string[] perms)
         {
             var warnings = new List<string>();
             var successes = new List<string>();

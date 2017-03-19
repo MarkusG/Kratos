@@ -23,7 +23,6 @@ namespace Kratos
             _config = map.Get<CoreConfig>();
             _log = map.Get<LogService>();
             _commands = new CommandService();
-            map.Add(_commands);
             _map = map;
         }
 
@@ -37,7 +36,7 @@ namespace Kratos
         {
             var message = m as SocketUserMessage;
             if (message == null) return;
-            if (!(message.Channel is IGuildChannel)) return;
+            if (!(message.Channel is SocketGuildChannel)) return;
             // Create a number to track where the prefix ends and the command begins
             int argPos = 0;
             // Determine if the message is a command, based on if it starts with '!' or a mention prefix
@@ -65,7 +64,7 @@ namespace Kratos
                 }
                 if (result.IsSuccess)
                 {
-                    var author = message.Author as IGuildUser;
+                    var author = message.Author as SocketGuildUser;
                     await _log.LogModMessageAsync($"{author.Nickname ?? author.Username} executed a command:\n`{m.Content}`");
                 }
             }

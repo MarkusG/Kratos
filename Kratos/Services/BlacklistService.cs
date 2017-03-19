@@ -79,23 +79,23 @@ namespace Kratos.Services
         private async Task _client_MessageReceived_Blacklist(SocketMessage m)
         {
             if (m.Author.Id == _client.CurrentUser.Id) return;
-            var author = m.Author as IGuildUser;
+            var author = m.Author as SocketGuildUser;
             if (author == null) return;
-            var guild = (m.Channel as IGuildChannel)?.Guild;
+            var guild = (m.Channel as SocketGuildChannel)?.Guild;
             if (guild == null) return;
-            if (author.RoleIds.Any(x => _config.BypassIds.Contains(x))) return;
+            if (author.Roles.Select(r => r.Id).Any(x => _config.BypassIds.Contains(x))) return;
             if (!IsViolatingBlacklist(m.Content)) return;
 
             var muteRole = guild.GetRole(_config.MuteRoleId);
             await m.DeleteAsync();
-            await author.AddRolesAsync(muteRole);
+            await author.AddRolesAsync(new SocketRole[] { muteRole });
 
-            var dmChannel = await author.GetDMChannelAsync() ?? await author.CreateDMChannelAsync();
+            var dmChannel = await author.CreateDMChannelAsync();
             await dmChannel.SendMessageAsync($"You've been muted for {MuteTime} for violating the world blacklist: `{m.Content}`");
             var name = author.Nickname == null
                 ? author.Username
                 : $"{author.Username} (nickname: {author.Nickname})";
-            await _log.LogModMessageAsync($"I automatically muted {name} for {MuteTime} for violating the word blacklist in {(m.Channel as ITextChannel).Mention}: `{m.Content}`");
+            await _log.LogModMessageAsync($"I automatically muted {name} for {MuteTime} for violating the word blacklist in {(m.Channel as SocketTextChannel).Mention}: `{m.Content}`");
             var mute = await _records.AddMuteAsync(guild.Id, author.Id, 0, DateTime.UtcNow, DateTime.UtcNow.Add(MuteTime), "N/A (BLACKLIST AUTO-MUTE)");
             _records.DisposeContext();
             _unpunish.Mutes.Add(mute);

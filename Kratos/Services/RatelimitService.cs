@@ -86,11 +86,11 @@ namespace Kratos.Services
             if (m.Author.Id == _client.CurrentUser.Id) return;
             var message = m as SocketUserMessage;
             if (m == null) return;
-            var author = m.Author as IGuildUser;
+            var author = m.Author as SocketGuildUser;
             if (author == null) return;
             if (IgnoredChannels.Contains(m.Channel.Id)) return;
 
-            if (author.RoleIds.Any(x => _config.BypassIds.Contains(x))) return;
+            if (author.Roles.Select(r => r.Id).Any(x => _config.BypassIds.Contains(x))) return;
 
             if (!_lastthreemessages.ContainsKey(author.Id))
                 _lastthreemessages.Add(author.Id, new DateTime[3]);
@@ -105,14 +105,14 @@ namespace Kratos.Services
             else
             {
                 var muteRole = author.Guild.GetRole(_config.MuteRoleId);
-                await author.AddRolesAsync(muteRole);
+                await author.AddRolesAsync(new SocketRole[] { muteRole } );
 
-                var dmChannel = await author.GetDMChannelAsync() ?? await author.CreateDMChannelAsync();
+                var dmChannel = await author.CreateDMChannelAsync();
                 await dmChannel.SendMessageAsync($"You've been muted for {MuteTime} for ratelimiting: `{m.Content}`");
                 var name = author.Nickname == null
                     ? author.Username
                     : $"{author.Username} (nickname: {author.Nickname})";
-                await _log.LogModMessageAsync($"I automatically muted {name} for {MuteTime} ratelimiting in {(m.Channel as ITextChannel).Mention}: `{m.Content}`");
+                await _log.LogModMessageAsync($"I automatically muted {name} for {MuteTime} ratelimiting in {(m.Channel as SocketTextChannel).Mention}: `{m.Content}`");
                 var mute = await _records.AddMuteAsync(author.Guild.Id, author.Id, 0, DateTime.UtcNow, DateTime.UtcNow.Add(MuteTime), "N/A (RATELIMIT AUTO-MUTE)");
                 _records.DisposeContext();
                 _unpunish.Mutes.Add(mute);
