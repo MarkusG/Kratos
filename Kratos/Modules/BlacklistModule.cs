@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Linq;
 using Discord.Commands;
 using Kratos.Services;
 using Kratos.Preconditions;
@@ -14,34 +16,36 @@ namespace Kratos.Modules
         private BlacklistService _service;
 
         [Command("add"), Alias("+")]
-        [Summary("Adds a phrase to the blacklist")]
+        [Summary("Adds a pattern to the blacklist")]
         [RequireCustomPermission("blacklist.manage")]
-        public async Task Add([Summary("The phrase to be added to the blacklist"), Remainder] string phrase)
+        public async Task Add([Summary("The pattern to be added to the blacklist"), Remainder] string pattern)
         {
-            if (!_service.Blacklist.Contains(phrase))
+            if (!_service.Blacklist.Any(x => x.ToString() == pattern))
             {
-                _service.Blacklist.Add(phrase);
-                await ReplyAsync($":ok: `{phrase}` has been added to the blacklist.");
+                _service.Blacklist.Add(new Regex(pattern, RegexOptions.IgnoreCase));
+                await ReplyAsync($":ok: `{pattern}` has been added to the blacklist.");
                 await _service.SaveConfigurationAsync();
             }
             else
-                await ReplyAsync($":x: `{phrase}` already exists in blacklist.");
+                await ReplyAsync($":x: `{pattern}` already exists in blacklist.");
         }
 
         [Command("remove"), Alias("-")]
-        [Summary("Removes a phrase from the blacklist")]
+        [Summary("Removes a pattern from the blacklist")]
         [RequireCustomPermission("blacklist.manage")]
-        public async Task Remove([Summary("The phrase to be removed from the blacklist"), Remainder] string phrase)
+        public async Task Remove([Summary("The pattern to be removed from the blacklist"), Remainder] string pattern)
         {
-            if (_service.Blacklist.Contains(phrase))
+            var toRemove = _service.Blacklist.FirstOrDefault(x => x.ToString() == pattern);
+
+            if (toRemove != null)
             {
-                _service.Blacklist.Remove(phrase);
+                _service.Blacklist.Remove(toRemove);
                 await _service.SaveConfigurationAsync();
-                await ReplyAsync($":ok: `{phrase}` has been removed from the blacklist.");
+                await ReplyAsync($":ok: `{pattern}` has been removed from the blacklist.");
             }
             else
             {
-                await ReplyAsync($":x: `{phrase}` does not exist in blacklist.");
+                await ReplyAsync($":x: `{pattern}` does not exist in blacklist.");
             }
         }
 
@@ -50,9 +54,9 @@ namespace Kratos.Modules
         [RequireCustomPermission("blacklist.view")]
         public async Task List()
         {
-            StringBuilder listResponse = new StringBuilder("**WORD BLACKLIST:**\n");
+            StringBuilder listResponse = new StringBuilder("**BLACKLIST:**\n");
             foreach (var s in _service.Blacklist)
-                listResponse.AppendLine(s);
+                listResponse.AppendLine(s.ToString());
             await ReplyAsync(listResponse.ToString());
         }
 

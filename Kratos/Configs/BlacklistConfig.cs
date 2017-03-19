@@ -1,4 +1,6 @@
-﻿namespace Kratos.Configs
+﻿using System.Collections.Generic;
+
+namespace Kratos.Configs
 {
     public class BlacklistConfig
     {
@@ -6,6 +8,6 @@
 
         public bool Enabled { get; set; }
 
-        public string[] Blacklist { get; set; }
+        public IEnumerable<string> Blacklist { get; set; }
     }
 }

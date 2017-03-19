@@ -3,6 +3,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using Discord;
 using Discord.WebSocket;
@@ -18,7 +19,7 @@ namespace Kratos.Services
         private RecordService _records;
         private CoreConfig _config;
 
-        public List<string> Blacklist { get; set; }
+        public List<Regex> Blacklist { get; set; }
         public TimeSpan MuteTime { get; set; }
         public bool IsEnabled { get; private set; }
 
@@ -39,7 +40,7 @@ namespace Kratos.Services
             {
                 MuteTimeInSeconds = (int)MuteTime.TotalSeconds,
                 Enabled = IsEnabled,
-                Blacklist = this.Blacklist.ToArray(),
+                Blacklist = this.Blacklist.Select(x => x.ToString()),
             };
 
             var serializedConfig = JsonConvert.SerializeObject(config, Formatting.Indented);
@@ -68,7 +69,7 @@ namespace Kratos.Services
 
                     MuteTime = TimeSpan.FromSeconds(config.MuteTimeInSeconds);
                     IsEnabled = config.Enabled;
-                    Blacklist = config.Blacklist.ToList();
+                    Blacklist = config.Blacklist.Select(x => new Regex(x, RegexOptions.IgnoreCase)).ToList();
 
                     return true;
                 }
@@ -100,14 +101,8 @@ namespace Kratos.Services
             _unpunish.Mutes.Add(mute);
         }
 
-        private bool IsViolatingBlacklist(string text)
-        {
-            if (Blacklist.Any(x => text.ToLower()
-                                       .Replace(" ", "")
-                                       .Contains(x))) return true;
-
-            return false;
-        }
+        private bool IsViolatingBlacklist(string text) =>
+            Blacklist.Any(x => x.IsMatch(text));
 
         public BlacklistService(DiscordSocketClient c, UnpunishService u, RecordService r, LogService l, CoreConfig config)
         {
@@ -116,7 +111,7 @@ namespace Kratos.Services
             _records = r;
             _log = l;
             _config = config;
-            Blacklist = new List<string>();
+            Blacklist = new List<Regex>();
             MuteTime = TimeSpan.FromSeconds(3600);
         }
     }
