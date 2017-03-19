@@ -32,7 +32,7 @@ namespace Kratos
 
         public async Task Start()
         {
-            Console.Title = $"Kratos";
+            Console.Title = "Kratos";
 
             // Set up our Discord client
             _client = new DiscordSocketClient(new DiscordSocketConfig()
@@ -78,7 +78,7 @@ namespace Kratos
                 _blacklist.Enable();
 
             _permissions = new PermissionsService();
-            _permissions.AddPermissions(Assembly.GetEntryAssembly());
+            _permissions.LoadPermissions(Assembly.GetEntryAssembly());
             await _permissions.LoadConfigurationAsync();
             
             // Instantiate the dependency map and add our services and client to it.

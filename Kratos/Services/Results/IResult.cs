@@ -4,6 +4,6 @@
     {
         ResultType Type { get; set; }
 
-        string Info { get; set; }
+        string Message { get; set; }
     }
 }

@@ -15,7 +15,7 @@ namespace Kratos.Modules
     {
         private PermissionsService _service;
 
-        [Command("addperm"), Alias("+")]
+        [Command("add"), Alias("+")]
         [Summary("Add a permission to a role.")]
         [RequireCustomPermission("permissions.manage")]
         public async Task AddPerm([Summary("Role to which to add the permission")] SocketRole role,
@@ -26,18 +26,18 @@ namespace Kratos.Modules
             {
                 case ResultType.Success:
                     await _service.SaveConfigurationAsync();
-                    await ReplyAsync(":ok: Permission added successfully.");
+                    await ReplyAsync($":ok: {result.Message}");
                     break;
                 case ResultType.Warning:
-                    await ReplyAsync($":warning: {result.Info}");
+                    await ReplyAsync($":warning: {result.Message}");
                     break;
                 case ResultType.Fail:
-                    await ReplyAsync($":x: {result.Info}");
+                    await ReplyAsync($":x: {result.Message}");
                     break;
             }
         }
 
-        [Command("removeperm"), Alias("-")]
+        [Command("remove"), Alias("-")]
         [Summary("Removes a permission from a role.")]
         [RequireCustomPermission("permissions.manage")]
         public async Task RemovePerm([Summary("Role from which to remove the permission")] SocketRole role,
@@ -48,13 +48,13 @@ namespace Kratos.Modules
             {
                 case ResultType.Success:
                     await _service.SaveConfigurationAsync();
-                    await ReplyAsync(":ok: Permission removed successfully.");
+                    await ReplyAsync($":ok: {result.Message}");
                     break;
                 case ResultType.Warning:
-                    await ReplyAsync($":warning: {result.Info}");
+                    await ReplyAsync($":warning: {result.Message}");
                     break;
                 case ResultType.Fail:
-                    await ReplyAsync($":x: {result.Info}");
+                    await ReplyAsync($":x: {result.Message}");
                     break;
             }
         }
@@ -64,9 +64,13 @@ namespace Kratos.Modules
         [RequireCustomPermission("permissions.view")]
         public async Task ListPerms([Summary("Role for which to list permissions")] SocketRole role)
         {
-            var response = new StringBuilder($"__Permissions held by {role.Name}__\n\n");
-            foreach (var p in _service.Permissions[role.Id].OrderBy(p => p))
-                response.AppendLine(p);
+            var response = new StringBuilder($"**Permissions held by {role.Name}**:\n\n");
+            var permissions = _service.GetPermissionsForRole(role);
+            if (permissions != null)
+            {
+                foreach (var p in _service.Permissions[role.Id].OrderBy(p => p))
+                    response.AppendLine(p);
+            }
             await ReplyAsync(response.ToString());
         }
 

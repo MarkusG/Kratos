@@ -11,104 +11,125 @@ namespace Kratos.Services
 {
     public class PermissionsService
     {
-        public List<string> AllPermissions { get; set; }
-        public Dictionary<ulong, List<string>> Permissions { get; set; }
+        public HashSet<string> AllPermissions { get; set; }
+        public Dictionary<ulong, HashSet<string>> Permissions { get; set; }
 
         public Result AddPermission(SocketRole role, string perm)
         {
-            bool containsRole = Permissions.ContainsKey(role.Id);
+            // Add wildcard permission
+            if (perm.Contains("*")) return AddWildcardPermission(role, perm);
+
+            // Add specific permission
             if (!AllPermissions.Contains(perm))
-                return new Result { Type = ResultType.Fail, Info = "Permission not found." };
-            if (containsRole && Permissions[role.Id].Contains(perm))
-                return new Result { Type = ResultType.Warning, Info = "Role already has permission." };
+                return new Result { Type = ResultType.Fail, Message = "Permission not found or invalid format." };
+            if (!Permissions.ContainsKey(role.Id))
+            {
+                var permissions = new HashSet<string>();
+                permissions.Add(perm);
+                Permissions.Add(role.Id, permissions);
+                return new Result { Type = ResultType.Success, Message = "Created permissions set for role and added specified permission." };
+            }
+            if (!Permissions[role.Id].Add(perm))
+                return new Result { Type = ResultType.Warning, Message = "Role already has permission." };
 
-            var rolePermissions = containsRole ? Permissions[role.Id]
-                                               : new List<string>();
-
-            rolePermissions.Add(perm);
-            if (containsRole)
-                return new Result { Type = ResultType.Success };
-            Permissions.Add(role.Id, rolePermissions);
-            return new Result { Type = ResultType.Success };
+            return new Result { Type = ResultType.Success, Message = "Added specified permission." };
         }
 
-        public PermissionRangeResult AddPermissions(SocketRole role, params string[] perms)
+        private Result AddWildcardPermission(SocketRole role, string perm)
         {
-            var failures = new List<string>();
-            var warnings = new List<string>();
-            var successes = new List<string>();
-            bool containsRole = Permissions.ContainsKey(role.Id);
-            var rolePermissions = containsRole ? Permissions[role.Id]
-                                               : new List<string>();
-
-            foreach (var p in perms)
+            var allSplitPerms = AllPermissions.Select(x => x.Split('.'));
+            var splitPerm = perm.Split('.');
+            if (splitPerm.All(x => x != "*")) return new Result { Type = ResultType.Fail, Message = "Invalid permission format." }; // Catch foo.bar*
+            if (splitPerm.Length > 2) return new Result { Type = ResultType.Fail, Message = "Invalid permission format." }; // Catch *.foo.bar
+            var parent = splitPerm[0];
+            var child = splitPerm[1];
+            bool setCreated = false;
+            if (!Permissions.ContainsKey(role.Id))
             {
-                if (!AllPermissions.Contains(p))
-                {
-                    failures.Add(p);
-                    continue;
-                }
-                if (rolePermissions.Contains(p))
-                {
-                    warnings.Add(p);
-                    continue;
-                }
-
-                rolePermissions.Add(p);
-                successes.Add(p);
+                Permissions.Add(role.Id, new HashSet<string>());
+                setCreated = true;
             }
-
-            if (!containsRole)
-                Permissions.Add(role.Id, rolePermissions);
-
-            return new PermissionRangeResult
+            if (parent == "*")
             {
-                Failures = failures,
-                Warnings = warnings,
-                Successes = successes,
-                Type = failures.Count == 0 && warnings.Count == 0 ? ResultType.Success
-                                                                  : ResultType.Warning,
-                Info = $"{successes.Count} permissions added successfully. {warnings} permissions were already held by the role. {failures} permissions were not found."
-            };
+                if (child == "*")
+                {
+                    // Add all existing permissions for all parents and children 
+                    foreach (var p in AllPermissions)
+                        Permissions[role.Id].Add(p);
+                    return new Result { Type = ResultType.Success, Message = setCreated ? "Created permission set for role and added all existing permissions."
+                                                                                        : "Added all existing permissions to role." };
+                }
+                else
+                {
+                    // Add all child permission matches for all existing parent permissions
+                    foreach (var p in allSplitPerms.Where(x => x[1] == child))
+                        Permissions[role.Id].Add(AllPermissions.FirstOrDefault(x => x == $"{p[0]}.{p[1]}"));
+                    return new Result { Type = ResultType.Success, Message = setCreated ? $"Created permission set for role and added all child permissions matching `{child}`."
+                                                                                        : $"Added all child permissions `{child}` to role." };
+                }
+            }
+            else
+            {
+                // Add all child permissions for the given parent permission
+                foreach (var p in allSplitPerms.Where(x => x[0] == parent))
+                    Permissions[role.Id].Add(AllPermissions.FirstOrDefault(x => x == $"{p[0]}.{p[1]}"));
+                return new Result { Type = ResultType.Success, Message = setCreated ? $"Created permission set for role and added all child permissions of `{parent}`."
+                                                                                    : $"Added all child permissions of `{parent}` to role." };
+            }
         }
 
         public Result RemovePermission(SocketRole role, string perm)
         {
-            if (!Permissions.ContainsKey(role.Id)) return new Result { Type = ResultType.Warning, Info = "Role has no permissions." };
-            if (!Permissions[role.Id].Contains(perm)) return new Result { Type = ResultType.Warning, Info = "Role does not have permission." };
-            Permissions[role.Id].Remove(perm);
-            return new Result { Type = ResultType.Success };
+            if (!Permissions.ContainsKey(role.Id)) return new Result { Type = ResultType.Warning, Message = "Role has no permission set." };
+            if (perm.Contains("*")) return RemoveWildcardPermission(role, perm);
+            if (!Permissions[role.Id].Remove(perm)) return new Result { Type = ResultType.Warning, Message = "Role does not have permission." };
+            return new Result { Type = ResultType.Success, Message = "Permission removed successfully." };
         }
 
-        public PermissionRangeResult RemovePermissions(SocketRole role, params string[] perms)
+        private Result RemoveWildcardPermission(SocketRole role, string perm)
         {
-            var warnings = new List<string>();
-            var successes = new List<string>();
-
-            if (!Permissions.ContainsKey(role.Id)) return new PermissionRangeResult { Type = ResultType.Warning, Info = "Role has no permissions." };
-
-            foreach (var p in perms)
+            var splitPerm = perm.Split('.');
+            var rolesSplitPerms = new List<string[]>(Permissions[role.Id].Select(x => x.Split('.')));
+            if (splitPerm.All(x => x != "*")) return new Result { Type = ResultType.Fail, Message = "Invalid permission format." }; // Catch foo.bar*
+            if (splitPerm.Length > 2) return new Result { Type = ResultType.Fail, Message = "Invalid permission format." }; // Catch *.foo.bar
+            var parent = splitPerm[0];
+            var child = splitPerm[1];
+            if (parent == "*")
             {
-                if (!Permissions[role.Id].Contains(p))
+                if (child == "*")
                 {
-                    warnings.Add(p);
-                    continue;
+                    // Remove all existing permissions for all parents and children
+                    Permissions.Remove(role.Id);
+                    return new Result { Type = ResultType.Success, Message = "Removed all permissions from role." };
                 }
-
-                Permissions[role.Id].Remove(p);
+                else
+                {
+                    // Add all child permission matches for all existing parent permissions
+                    foreach (var p in rolesSplitPerms.Where(x => x[1] == child))
+                        Permissions[role.Id].Remove(AllPermissions.FirstOrDefault(x => x == $"{p[0]}.{p[1]}"));
+                    if (Permissions[role.Id].Count == 0)
+                        Permissions.Remove(role.Id);
+                    return new Result { Type = ResultType.Success, Message = $"Removed all child permissions `{child}` from role." };
+                }
             }
-
-            return new PermissionRangeResult
+            else
             {
-                Warnings = warnings,
-                Successes = successes,
-                Type = warnings.Count == 0 ? ResultType.Success
-                                           : ResultType.Warning,
-                Info = $"{successes.Count} permissions removed sucessfully. {warnings} were not held by the role."
-            };
+                // Add all child permissions for the given parent permission
+                foreach (var p in rolesSplitPerms.Where(x => x[0] == parent))
+                    Permissions[role.Id].Remove(AllPermissions.FirstOrDefault(x => x == $"{p[0]}.{p[1]}"));
+                if (Permissions[role.Id].Count == 0)
+                    Permissions.Remove(role.Id);
+                return new Result { Type = ResultType.Success, Message = $"Removed all child permissions of `{parent}` from role." };
+            }
         }
 
-        public void AddPermissions(Assembly assembly)
+        public IEnumerable<string> GetPermissionsForRole(SocketRole role)
+        {
+            if (Permissions.ContainsKey(role.Id)) return Permissions[role.Id];
+            return null;
+        }
+
+        public void LoadPermissions(Assembly assembly)
         {
             var permissions = assembly.GetTypes()
               .SelectMany(x => x.GetMethods())
@@ -149,7 +170,7 @@ namespace Kratos.Services
                 }
             }
 
-            var config = JsonConvert.DeserializeObject<Dictionary<ulong, List<string>>>(serializedConfig);
+            var config = JsonConvert.DeserializeObject<Dictionary<ulong, HashSet<string>>>(serializedConfig);
             if (config == null) return false;
 
             Permissions = config;
@@ -159,8 +180,8 @@ namespace Kratos.Services
 
         public PermissionsService()
         {
-            AllPermissions = new List<string>();
-            Permissions = new Dictionary<ulong, List<string>>();
+            AllPermissions = new HashSet<string>();
+            Permissions = new Dictionary<ulong, HashSet<string>>();
         }
     }
 }
