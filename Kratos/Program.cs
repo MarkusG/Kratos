@@ -14,8 +14,6 @@ namespace Kratos
     {
         static void Main(string[] args) => new Program().Start().GetAwaiter().GetResult();
 
-        public const string Version = "build 032";
-
         #region Private fields
         private DiscordSocketClient _client;
         private BlacklistService _blacklist;
@@ -34,7 +32,7 @@ namespace Kratos
 
         public async Task Start()
         {
-            Console.Title = $"Kratos {Version}";
+            Console.Title = $"Kratos";
 
             // Set up our Discord client
             _client = new DiscordSocketClient(new DiscordSocketConfig()

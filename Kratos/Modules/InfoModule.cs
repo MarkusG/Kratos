@@ -177,6 +177,18 @@ namespace Kratos.Modules
             await ReplyAsync(response.ToString() + "```");
         }
 
+        [Command("roles")]
+        [Summary("Get role information for all roles on the server")]
+        public async Task Roles()
+        {
+            var response = new StringBuilder("**ROLES**:\n");
+            foreach (var r in Context.Guild.Roles.OrderByDescending(r => r.Position))
+            {
+                response.AppendLine($"{r.Position}. {r.Name} ({r.Id})");
+            }
+            await ReplyAsync(response.ToString().Replace("@everyone", "everyonerole"));
+        }
+
         public InfoModule(DiscordSocketClient c)
         {
             _client = c;

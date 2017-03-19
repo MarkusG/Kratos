@@ -166,6 +166,7 @@ namespace Kratos.Modules
         {
             await _client.SetStatusAsync(UserStatus.Invisible);
             await ReplyAsync(":ok:");
+            await _client.LogoutAsync();
             await _client.StopAsync();
             Environment.Exit(0);
         }
