@@ -75,7 +75,7 @@ namespace Kratos.Modules
                 {
                     x.IsInline = false;
                     x.Name = "Roles";
-                    x.Value = user.Roles.Select(r => r.Name).Aggregate((b, a) => $"{b}, {a}");
+                    x.Value = string.Join(", ", user.Roles.Select(r => r.Name));
                 });
             await ReplyAsync("", embed: response);
         }
@@ -143,13 +143,13 @@ namespace Kratos.Modules
                 {
                     x.IsInline = false;
                     x.Name = "Text channels";
-                    x.Value = textChannels.Select(c => c.Name).Aggregate((b, a) => $"{b}, {a}");
+                    x.Value = string.Join(", ", textChannels.Select(c => c.Name));
                 })
                 .AddField(x =>
                 {
                     x.IsInline = false;
                     x.Name = "Voice channels";
-                    x.Value = voiceChannels.Select(c => c.Name).Aggregate((b, a) => $"{b}, {a}");
+                    x.Value = string.Join(", ", voiceChannels.Select(c => c.Name));
                 });
             await ReplyAsync("", embed: response);
         }

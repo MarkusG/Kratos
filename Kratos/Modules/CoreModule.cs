@@ -41,7 +41,7 @@ namespace Kratos.Modules
                 foreach (var c in m.Commands)
                 {
                     var prefixlessAliases = c.Aliases.Select(x => x.Remove(0, c.Module.Aliases.FirstOrDefault().Length));
-                    response.Append($"## `{prefixlessAliases.Aggregate((b, a) => b + " | " + a)} ");
+                    response.Append($"## ` {string.Join(" | ", prefixlessAliases)}");
                     foreach (var p in c.Parameters)
                     {
                         if (p.IsOptional)

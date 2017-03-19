@@ -27,7 +27,7 @@ namespace Kratos.Modules
                     await ReplyAsync(":x: No tags found.");
                     return;
                 }
-                var response = tags.Aggregate((b, a) => $"{b}, {a}");
+                var response = string.Join(", ", tags);
                 await ReplyAsync(response);
                 _service.DisposeContext();
                 return;
