@@ -29,10 +29,6 @@ namespace Kratos.Modules
             ".png"
         };
 
-        [Command("help"), Summary("Displays this help page")]
-        public async Task Help() =>
-            await ReplyAsync("https://github.com/MarkusGordathian/Kratos/wiki/Commands");
-
         [Command("gendocs"), Summary("Generates these docs")]
         [RequireCustomPermission("core.gendocs")]
         public async Task GenerateDocumentation()
@@ -84,13 +80,6 @@ namespace Kratos.Modules
             var stream = new MemoryStream(helpBytes);
 
             await Context.Channel.SendFileAsync(stream, "help.md");
-        }
-
-        [Command("ping")]
-        [Summary("Returns \"Pong!\" and the bot's latency to Discord")]
-        public async Task Ping()
-        {
-            await ReplyAsync($"Pong! My latency is currently {_client.Latency}ms.");
         }
 
         [Command("setmuterole"), Alias("smr")]
@@ -169,18 +158,6 @@ namespace Kratos.Modules
         {
             await _client.CurrentUser.ModifyAsync(x => x.Username = content);
             await ReplyAsync(":ok:");
-        }
-
-        [Command("info")]
-        [Summary("Returns general information about the bot")]
-        public async Task Info()
-        {
-            DateTime startTime = Process.GetCurrentProcess().StartTime;
-            TimeSpan uptime = DateTime.Now.Subtract(startTime);
-            StringBuilder response = new StringBuilder("```");
-            response.AppendLine($"Uptime: {uptime.Days}d {uptime.Hours}h {uptime.Minutes}m {uptime.Seconds}s");
-
-            await ReplyAsync(response.ToString() + "```");
         }
 
         public CoreModule(DiscordSocketClient c, CommandService s, BlacklistService b, CoreConfig config)
