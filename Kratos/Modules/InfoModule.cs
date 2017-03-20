@@ -22,7 +22,7 @@ namespace Kratos.Modules
         public async Task UserInfo([Summary("User for which to get information")] SocketGuildUser user)
         {
             var response = new EmbedBuilder()
-                .WithTitle($"Userinfo for {user.Username}#{user.Discriminator}")
+                .WithTitle($"User information for {user.Username}#{user.Discriminator}")
                 .WithThumbnailUrl(user.GetAvatarUrl())
                 .AddField(x =>
                 {
@@ -150,6 +150,12 @@ namespace Kratos.Modules
                     x.IsInline = false;
                     x.Name = "Voice channels";
                     x.Value = string.Join(", ", voiceChannels.Select(c => c.Name));
+                })
+                .AddField(x =>
+                {
+                    x.IsInline = false;
+                    x.Name = "Roles";
+                    x.Value = string.Join(", ", Context.Guild.Roles.Select(r => r.Name));
                 });
             await ReplyAsync("", embed: response);
         }
