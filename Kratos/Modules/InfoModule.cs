@@ -7,6 +7,7 @@ using Discord.WebSocket;
 using Discord.Commands;
 using Kratos.Preconditions;
 using System.Diagnostics;
+using Humanizer;
 
 namespace Kratos.Modules
 {
@@ -178,7 +179,7 @@ namespace Kratos.Modules
             DateTime startTime = Process.GetCurrentProcess().StartTime;
             TimeSpan uptime = DateTime.Now.Subtract(startTime);
             StringBuilder response = new StringBuilder("```");
-            response.AppendLine($"Uptime: {uptime.Days}d {uptime.Hours}h {uptime.Minutes}m {uptime.Seconds}s");
+            response.AppendLine($"Uptime: {uptime.Humanize()}");
 
             await ReplyAsync(response.ToString() + "```");
         }

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Discord;
 using Discord.WebSocket;
 using Kratos.Configs;
+using Humanizer;
 
 namespace Kratos.Services
 {
@@ -67,7 +68,7 @@ namespace Kratos.Services
                     var mute = await _records.AddMuteAsync(author.Guild.Id, author.Id, 0, DateTime.UtcNow, DateTime.UtcNow.Add(MuteTime), "Slowmode auto-mute");
                     _unpunish.Mutes.Add(mute);
                     _records.DisposeContext();
-                    await _log.LogModMessageAsync($"Automatically muted {author.Nickname ?? author.Username} ({author.Id})'s message in {channel.Mention} for {MuteTime} for violating slowmode: `{m.Content}`");
+                    await _log.LogModMessageAsync($"Automatically muted {author.Nickname ?? author.Username} ({author.Id})'s message in {channel.Mention} for {MuteTime.Humanize()} for violating slowmode: `{m.Content}`");
                 }
             }
         }

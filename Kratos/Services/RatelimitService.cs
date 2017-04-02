@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using Discord;
 using Discord.WebSocket;
 using Kratos.Configs;
+using Humanizer;
 
 namespace Kratos.Services
 {
@@ -108,11 +109,11 @@ namespace Kratos.Services
                 await author.AddRolesAsync(new SocketRole[] { muteRole } );
 
                 var dmChannel = await author.CreateDMChannelAsync();
-                await dmChannel.SendMessageAsync($"You've been muted for {MuteTime} for ratelimiting: `{m.Content}`");
+                await dmChannel.SendMessageAsync($"You've been muted for {MuteTime.Humanize()} for ratelimiting: `{m.Content}`");
                 var name = author.Nickname == null
                     ? author.Username
                     : $"{author.Username} (nickname: {author.Nickname})";
-                await _log.LogModMessageAsync($"I automatically muted {name} for {MuteTime} ratelimiting in {(m.Channel as SocketTextChannel).Mention}: `{m.Content}`");
+                await _log.LogModMessageAsync($"I automatically muted {name} for {MuteTime.Humanize()} ratelimiting in {(m.Channel as SocketTextChannel).Mention}: `{m.Content}`");
                 var mute = await _records.AddMuteAsync(author.Guild.Id, author.Id, 0, DateTime.UtcNow, DateTime.UtcNow.Add(MuteTime), "N/A (RATELIMIT AUTO-MUTE)");
                 _records.DisposeContext();
                 _unpunish.Mutes.Add(mute);
