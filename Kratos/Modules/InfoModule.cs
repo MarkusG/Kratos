@@ -179,7 +179,7 @@ namespace Kratos.Modules
             DateTime startTime = Process.GetCurrentProcess().StartTime;
             TimeSpan uptime = DateTime.Now.Subtract(startTime);
             StringBuilder response = new StringBuilder("```");
-            response.AppendLine($"Uptime: {uptime.Humanize()}");
+            response.AppendLine($"Uptime: {uptime.Humanize(5)}");
 
             await ReplyAsync(response.ToString() + "```");
         }

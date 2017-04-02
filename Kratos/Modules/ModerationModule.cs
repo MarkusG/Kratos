@@ -75,7 +75,7 @@ namespace Kratos.Modules
             _unpunish.Bans.Add(ban);
             _records.DisposeContext();
             var author = Context.User as SocketGuildUser;
-            await _log.LogModMessageAsync($"{author.Nickname ?? author.Username} forcebanned {id} for {time.Humanize()} for `{reason}`");
+            await _log.LogModMessageAsync($"{author.Nickname ?? author.Username} forcebanned {id} for {time.Humanize(5)} for `{reason}`");
             await ReplyAsync(":ok:");
         }
 
@@ -127,7 +127,7 @@ namespace Kratos.Modules
             var ban = await _records.AddTempBanAsync(Context.Guild.Id, user.Id, name, Context.User.Id, DateTime.UtcNow, DateTime.UtcNow.Add(time), reason);
             _records.DisposeContext();
             _unpunish.Bans.Add(ban);
-            await _log.LogModMessageAsync($"{author.Nickname ?? author.Username} temp banned {user.Username} for {time.Humanize()} for `{reason}`");
+            await _log.LogModMessageAsync($"{author.Nickname ?? author.Username} temp banned {user.Username} for {time.Humanize(5)} for `{reason}`");
             await ReplyAsync(":ok:");
         }
 
