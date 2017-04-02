@@ -137,14 +137,14 @@ namespace Kratos.Services
         {
             if (ServerLogChannelId == 0) return;
             var channel = _client.GetChannel(ServerLogChannelId) as SocketTextChannel;
-            await channel.SendMessageAsync(message.Replace("@everyone", "(at)everyone").Replace("@here", "(at)here"));
+            await channel.SendMessageAsync(message.Replace("@", "(at)"));
         }
 
         public async Task LogModMessageAsync(string message)
         {
             if (ModLogChannelId == 0) return;
             var channel = _client.GetChannel(ModLogChannelId) as SocketTextChannel;
-            await channel.SendMessageAsync(message.Replace("@everyone", "(at)everyone").Replace("@here", "(at)here"));
+            await channel.SendMessageAsync(message.Replace("@", "(at)"));
         }
 
         public async Task<bool> SaveConfigurationAsync()
@@ -209,8 +209,8 @@ namespace Kratos.Services
             var author = a.Author as SocketGuildUser;
             if (author == null) return;
             await LogServerMessageAsync($"{author.Nickname ?? author.Username}#{author.Discriminator} ({author.Id}) edited their message in {(a.Channel as SocketTextChannel).Mention}:\n" +
-                                        $"Before: `{before.Content}`\n" + 
-                                        $"After: `{a.Content}`");
+                                        $"Before: {before.Content}\n" + 
+                                        $"After: {a.Content}");
         }
 
         private async Task _client_MessageDeleted(Cacheable<IMessage, ulong> m, ISocketMessageChannel channel)
@@ -220,7 +220,7 @@ namespace Kratos.Services
             var author = message.Author as SocketGuildUser;
             if (author == null) return;
             await LogServerMessageAsync($"{author.Nickname ?? author.Username}#{author.Discriminator} ({author.Id})'s message was deleted in {(message.Channel as SocketTextChannel).Mention}:\n" +
-                                        $"`{message.Content}`");
+                                        $"{message.Content}");
         }
 
         private async Task _client_UserJoined(SocketGuildUser u)
