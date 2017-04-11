@@ -64,8 +64,8 @@ namespace Kratos.Services
                     // Delete message and mute user
                     await m.DeleteAsync();
                     var muteRole = author.Guild.GetRole(_config.MuteRoleId);
-                    await author.AddRolesAsync(new SocketRole[] { muteRole });
-                    var mute = await _records.AddMuteAsync(author.Guild.Id, author.Id, 0, DateTime.UtcNow, DateTime.UtcNow.Add(MuteTime), "Slowmode auto-mute");
+                    await author.AddRoleAsync(muteRole);
+                    var mute = await _records.AddMuteAsync(author.Guild.Id, author.Id, 0, DateTime.UtcNow, DateTime.UtcNow.Add(MuteTime), "N/A (SLOWMODE AUTO-MUTE)");
                     _unpunish.Mutes.Add(mute);
                     _records.DisposeContext();
                     await _log.LogModMessageAsync($"Automatically muted {author.Nickname ?? author.Username} ({author.Id})'s message in {channel.Mention} for {MuteTime.Humanize(5)} for violating slowmode: `{m.Content}`");

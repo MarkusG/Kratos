@@ -178,7 +178,7 @@ namespace Kratos.Modules
             }
 
             var muteRole = Context.Guild.GetRole(_config.MuteRoleId);
-            await user.AddRolesAsync(new IRole[] { muteRole });
+            await user.AddRoleAsync(muteRole);
             var mute = await _records.AddMuteAsync(Context.Guild.Id, user.Id, Context.User.Id, DateTime.UtcNow, DateTime.UtcNow.Add(time), reason);
             _records.DisposeContext();
             _unpunish.Mutes.Add(mute);

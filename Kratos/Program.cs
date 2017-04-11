@@ -73,9 +73,6 @@ namespace Kratos
                 _ratelimit.Enable(_ratelimit.Limit);
 
             _blacklist = new BlacklistService(_client, _unpunish, _records, _log, _config);
-            await _blacklist.LoadConfigurationAsync();
-            if (_blacklist.IsEnabled)
-                _blacklist.Enable();
 
             _permissions = new PermissionsService();
             _permissions.LoadPermissions(Assembly.GetEntryAssembly());
@@ -99,6 +96,11 @@ namespace Kratos
             _commands = new CommandHandler(_map);
             await _commands.InstallAsync();
 
+            // Set up an event handler to execute some state-reliant startup tasks
+            _client.Ready += async () =>
+            {
+                await _blacklist.LoadConfigurationAsync();
+            };
             // Connect to Discord
             await _client.LoginAsync(TokenType.Bot, _config.Token);
             await _client.StartAsync();

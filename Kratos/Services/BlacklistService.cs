@@ -5,10 +5,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
-using Discord;
 using Discord.WebSocket;
-using Kratos.Configs;
 using Humanizer;
+using Kratos.Configs;
+using Kratos.Data;
+using Kratos.Services.Models;
+using Kratos.Services.Results;
 
 namespace Kratos.Services
 {
@@ -20,30 +22,13 @@ namespace Kratos.Services
         private RecordService _records;
         private CoreConfig _config;
 
-        public List<Regex> Blacklist { get; set; }
-        public TimeSpan MuteTime { get; set; }
-        public bool IsEnabled { get; private set; }
+        public List<ChannelBlacklist> ChannelBlacklists { get; private set; }
 
-        public void Enable()
-        {
-            _client.MessageReceived += _client_MessageReceived_Blacklist;
-            IsEnabled = true;
-        }
-        public void Disable()
-        {
-            _client.MessageReceived -= _client_MessageReceived_Blacklist;
-            IsEnabled = false;
-        }
+        public GlobalBlacklist GlobalBlacklist { get; private set; }
 
         public async Task<bool> SaveConfigurationAsync()
         {
-            var config = new BlacklistConfig
-            {
-                MuteTimeInSeconds = (int)MuteTime.TotalSeconds,
-                Enabled = IsEnabled,
-                Blacklist = this.Blacklist.Select(x => x.ToString()),
-            };
-
+            var config = BlacklistConfig.FromService(this);
             var serializedConfig = JsonConvert.SerializeObject(config, Formatting.Indented);
 
             using (var configStream = new FileStream(Path.Combine(Directory.GetCurrentDirectory(), "config", "blacklist.json"), FileMode.Truncate))
@@ -68,9 +53,20 @@ namespace Kratos.Services
                     var config = JsonConvert.DeserializeObject<BlacklistConfig>(serializedConfig);
                     if (config == null) return false;
 
-                    MuteTime = TimeSpan.FromSeconds(config.MuteTimeInSeconds);
-                    IsEnabled = config.Enabled;
-                    Blacklist = config.Blacklist.Select(x => new Regex(x, RegexOptions.IgnoreCase)).ToList();
+                    foreach (var b in config.ChannelBlacklists)
+                    {
+                        ChannelBlacklists.Add(new ChannelBlacklist
+                        {
+                            Channel = _client.GetChannel(b.ChannelId) as SocketTextChannel,
+                            List = b.List.Select(x => new Regex(x)).ToList(),
+                            MuteTime = b.MuteTime,
+                            Enabled = b.Enabled
+                        });
+                    }
+
+                    GlobalBlacklist.List = config.GlobalList.Select(x => new Regex(x)).ToList();
+                    GlobalBlacklist.MuteTime = config.GlobalMuteTime;
+                    GlobalBlacklist.Enabled = config.GlobalEnabled;
 
                     return true;
                 }
@@ -85,25 +81,44 @@ namespace Kratos.Services
             var guild = (m.Channel as SocketGuildChannel)?.Guild;
             if (guild == null) return;
             if (author.Roles.Select(r => r.Id).Any(x => _config.BypassIds.Contains(x))) return;
-            if (!IsViolatingBlacklist(m.Content)) return;
+            var violation = CheckViolation(m);
+            if (!violation.IsViolating) return;
 
             var muteRole = guild.GetRole(_config.MuteRoleId);
             await m.DeleteAsync();
-            await author.AddRolesAsync(new SocketRole[] { muteRole });
+            await author.AddRoleAsync(muteRole);
 
             var dmChannel = await author.CreateDMChannelAsync();
-            await dmChannel.SendMessageAsync($"You've been muted for {MuteTime.Humanize(5)} for violating the world blacklist: `{m.Content}`");
-            var name = author.Nickname == null
-                ? author.Username
-                : $"{author.Username} (nickname: {author.Nickname})";
-            await _log.LogModMessageAsync($"I automatically muted {name} for {MuteTime.Humanize(5)} for violating the word blacklist in {(m.Channel as SocketTextChannel).Mention}: `{m.Content}`");
-            var mute = await _records.AddMuteAsync(guild.Id, author.Id, 0, DateTime.UtcNow, DateTime.UtcNow.Add(MuteTime), "N/A (BLACKLIST AUTO-MUTE)");
+            Mute mute = null;
+            if (violation.Blacklist == null)
+            {
+                await dmChannel.SendMessageAsync($"You've been muted for {GlobalBlacklist.MuteTime.Humanize(5)} for violating the world blacklist: `{m.Content}`");
+                var name = author.Nickname == null
+                    ? author.Username
+                    : $"{author.Username} (nickname: {author.Nickname})";
+                await _log.LogModMessageAsync($"I automatically muted {name} for {GlobalBlacklist.MuteTime.Humanize(5)} for violating the word blacklist in {(m.Channel as SocketTextChannel).Mention}: `{m.Content}`");
+                mute = await _records.AddMuteAsync(guild.Id, author.Id, 0, DateTime.UtcNow, DateTime.UtcNow.Add(GlobalBlacklist.MuteTime), "N/A (BLACKLIST AUTO-MUTE)");
+            }
+            else
+            {
+                await dmChannel.SendMessageAsync($"You've been muted for {violation.Blacklist.MuteTime.Humanize(5)} for violating the world blacklist: `{m.Content}`");
+                var name = author.Nickname == null
+                    ? author.Username
+                    : $"{author.Username} (nickname: {author.Nickname})";
+                await _log.LogModMessageAsync($"I automatically muted {name} for {violation.Blacklist.MuteTime.Humanize(5)} for violating the word blacklist in {(m.Channel as SocketTextChannel).Mention}: `{m.Content}`");
+                mute = await _records.AddMuteAsync(guild.Id, author.Id, 0, DateTime.UtcNow, DateTime.UtcNow.Add(violation.Blacklist.MuteTime), "N/A (BLACKLIST AUTO-MUTE)");
+            }
             _records.DisposeContext();
             _unpunish.Mutes.Add(mute);
         }
 
-        private bool IsViolatingBlacklist(string text) =>
-            Blacklist.Any(x => x.IsMatch(text));
+        private BlacklistViolationResult CheckViolation(SocketMessage m)
+        {
+            if (GlobalBlacklist.CheckViolation(m.Content)) return new BlacklistViolationResult { IsViolating = true };
+            var blacklist = ChannelBlacklists.FirstOrDefault(x => x.Channel == m.Channel as SocketTextChannel);
+            if (blacklist == null) return new BlacklistViolationResult { IsViolating = false };
+            return new BlacklistViolationResult { Blacklist = blacklist, IsViolating = blacklist.CheckViolation(m.Content) };
+        }
 
         public BlacklistService(DiscordSocketClient c, UnpunishService u, RecordService r, LogService l, CoreConfig config)
         {
@@ -112,8 +127,9 @@ namespace Kratos.Services
             _records = r;
             _log = l;
             _config = config;
-            Blacklist = new List<Regex>();
-            MuteTime = TimeSpan.FromSeconds(3600);
+            ChannelBlacklists = new List<ChannelBlacklist>();
+            GlobalBlacklist = new GlobalBlacklist();
+            _client.MessageReceived += _client_MessageReceived_Blacklist;
         }
     }
 }
