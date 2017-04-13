@@ -31,6 +31,8 @@ namespace Kratos.Services
             var config = BlacklistConfig.FromService(this);
             var serializedConfig = JsonConvert.SerializeObject(config, Formatting.Indented);
 
+            if (!File.Exists(Path.Combine(Directory.GetCurrentDirectory(), "config", "blacklist.json")))
+                File.Create(Path.Combine(Directory.GetCurrentDirectory(), "config", "blacklist.json")).Dispose();
             using (var configStream = new FileStream(Path.Combine(Directory.GetCurrentDirectory(), "config", "blacklist.json"), FileMode.Truncate))
             {
                 using (var configWriter = new StreamWriter(configStream))
