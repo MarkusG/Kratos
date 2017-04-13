@@ -98,7 +98,7 @@ namespace Kratos.Services
                 var name = author.Nickname == null
                     ? author.Username
                     : $"{author.Username} (nickname: {author.Nickname})";
-                await _log.LogModMessageAsync($"I automatically muted {name} for {GlobalBlacklist.MuteTime.Humanize(5)} for violating the word blacklist in {(m.Channel as SocketTextChannel).Mention}: `{m.Content}`");
+                await _log.LogModMessageAsync($"I automatically muted {name} ({author.Id}) for {GlobalBlacklist.MuteTime.Humanize(5)} for violating the word blacklist in {(m.Channel as SocketTextChannel).Mention}: `{m.Content}`");
                 mute = await _records.AddMuteAsync(guild.Id, author.Id, 0, DateTime.UtcNow, DateTime.UtcNow.Add(GlobalBlacklist.MuteTime), "N/A (BLACKLIST AUTO-MUTE)");
             }
             else
@@ -107,7 +107,7 @@ namespace Kratos.Services
                 var name = author.Nickname == null
                     ? author.Username
                     : $"{author.Username} (nickname: {author.Nickname})";
-                await _log.LogModMessageAsync($"I automatically muted {name} for {violation.Blacklist.MuteTime.Humanize(5)} for violating the word blacklist in {(m.Channel as SocketTextChannel).Mention}: `{m.Content}`");
+                await _log.LogModMessageAsync($"I automatically muted {name} ({author.Id}) for {violation.Blacklist.MuteTime.Humanize(5)} for violating the word blacklist in {(m.Channel as SocketTextChannel).Mention}: `{m.Content}`");
                 mute = await _records.AddMuteAsync(guild.Id, author.Id, 0, DateTime.UtcNow, DateTime.UtcNow.Add(violation.Blacklist.MuteTime), "N/A (BLACKLIST AUTO-MUTE)");
             }
             _records.DisposeContext();
