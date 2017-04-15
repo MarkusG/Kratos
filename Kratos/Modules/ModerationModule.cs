@@ -7,6 +7,7 @@ using Discord.Commands;
 using Kratos.Preconditions;
 using Kratos.Services;
 using Kratos.Configs;
+using Kratos.Data;
 using Humanizer;
 
 namespace Kratos.Modules
@@ -43,7 +44,15 @@ namespace Kratos.Modules
             var name = user.Nickname == null
                 ? user.Username
                 : $"{user.Username} (nickname: {user.Nickname})";
-            await _records.AddPermaBanAsync(Context.Guild.Id, user.Id, name, Context.User.Id, DateTime.UtcNow, reason);
+            await _records.AddPermaBanAsync(new PermaBan
+            {
+                GuildId = Context.Guild.Id,
+                SubjectId = user.Id,
+                SubjectName = user.Username,
+                ModeratorId = Context.User.Id,
+                Timestamp = DateTime.UtcNow,
+                Reason = reason
+            });
             _records.DisposeContext();
             await _log.LogModMessageAsync($"{author.Nickname ?? author.Username} permabanned {name} for `{reason}`");
             await ReplyAsync(":ok:");
@@ -56,7 +65,15 @@ namespace Kratos.Modules
                                    [Summary("Reason for ban")] string reason = "N/A")
         {
             await Context.Guild.AddBanAsync(id);
-            await _records.AddPermaBanAsync(Context.Guild.Id, id, "N/A (FORCEBANNED)", Context.User.Id, DateTime.UtcNow, reason);
+            await _records.AddPermaBanAsync(new PermaBan
+            {
+                GuildId = Context.Guild.Id,
+                SubjectId = id,
+                SubjectName = "N/A (FORCEBANNED)",
+                ModeratorId = Context.User.Id,
+                Timestamp = DateTime.UtcNow,
+                Reason = reason
+            });
             _records.DisposeContext();
             var author = Context.User as SocketGuildUser;
             await _log.LogModMessageAsync($"{author.Nickname ?? author.Username} forcebanned {id} for `{reason}`");
@@ -71,7 +88,17 @@ namespace Kratos.Modules
                                    [Summary("Reason for ban")] string reason = "N/A")
         {
             await Context.Guild.AddBanAsync(id);
-            var ban = await _records.AddTempBanAsync(Context.Guild.Id, id, "N/A (FORCEBANNED)", Context.User.Id, DateTime.UtcNow, DateTime.UtcNow.Add(time), reason);
+            var ban = await _records.AddTempBanAsync(new TempBan
+            {
+                GuildId = Context.Guild.Id,
+                SubjectId = id,
+                SubjectName = "N/A (FORCEBANNED)",
+                ModeratorId = Context.User.Id,
+                Timestamp = DateTime.UtcNow,
+                UnbanAt = DateTime.UtcNow.Add(time),
+                Reason = reason,
+                Active = true
+            });
             _unpunish.Bans.Add(ban);
             _records.DisposeContext();
             var author = Context.User as SocketGuildUser;
@@ -124,7 +151,17 @@ namespace Kratos.Modules
             var name = user.Nickname == null
                 ? user.Username
                 : $"{user.Username} (nickname: {user.Nickname})";
-            var ban = await _records.AddTempBanAsync(Context.Guild.Id, user.Id, name, Context.User.Id, DateTime.UtcNow, DateTime.UtcNow.Add(time), reason);
+            var ban = await _records.AddTempBanAsync(new TempBan
+            {
+                GuildId = Context.Guild.Id,
+                SubjectId = user.Id,
+                SubjectName = name,
+                ModeratorId = Context.User.Id,
+                Timestamp = DateTime.UtcNow,
+                UnbanAt = DateTime.UtcNow.Add(time),
+                Reason = reason,
+                Active = true
+            });
             _records.DisposeContext();
             _unpunish.Bans.Add(ban);
             await _log.LogModMessageAsync($"{author.Nickname ?? author.Username} temp banned {user.Username} for {time.Humanize(5)} for `{reason}`");
@@ -153,7 +190,15 @@ namespace Kratos.Modules
             var name = user.Nickname == null
                 ? user.Username
                 : $"{user.Username} (nickname: {user.Nickname})";
-            await _records.AddSoftBanAsync(Context.Guild.Id, user.Id, name, Context.User.Id, DateTime.UtcNow, reason);
+            await _records.AddSoftBanAsync(new SoftBan
+            {
+                GuildId = Context.Guild.Id,
+                SubjectId = user.Id,
+                SubjectName = user.Username,
+                ModeratorId = Context.User.Id,
+                Timestamp = DateTime.UtcNow,
+                Reason = reason
+            });
             _records.DisposeContext();
             await _log.LogModMessageAsync($"{author.Nickname ?? author.Username} softbanned {name} for `{reason}`");
             await ReplyAsync(":ok:");
@@ -179,7 +224,16 @@ namespace Kratos.Modules
 
             var muteRole = Context.Guild.GetRole(_config.MuteRoleId);
             await user.AddRoleAsync(muteRole);
-            var mute = await _records.AddMuteAsync(Context.Guild.Id, user.Id, Context.User.Id, DateTime.UtcNow, DateTime.UtcNow.Add(time), reason);
+            var mute = await _records.AddMuteAsync(new Mute
+            {
+                GuildId = Context.Guild.Id,
+                SubjectId = user.Id,
+                ModeratorId = Context.User.Id,
+                Timestamp = DateTime.UtcNow,
+                UnmuteAt = DateTime.UtcNow.Add(time),
+                Reason = reason,
+                Active = true
+            });
             _records.DisposeContext();
             _unpunish.Mutes.Add(mute);
             await ReplyAsync(":ok:");

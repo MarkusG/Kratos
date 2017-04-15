@@ -11,108 +11,48 @@ namespace Kratos.Services
     {
         private RecordContext _db;
 
-        public async Task<Mute> AddMuteAsync(
-            ulong guildId,
-            ulong subjectId,
-            ulong moderatorId,
-            DateTime timestamp,
-            DateTime unMuteAtTimestamp,
-            string reason)
+        public async Task<Mute> AddMuteAsync(Mute mute)
         {
             if (_db == null)
                 _db = new RecordContext();
             await _db.Database.EnsureCreatedAsync();
-            var mute = await _db.Mutes.AddAsync(new Mute
-            {
-                Active = true,
-                GuildId = guildId,
-                SubjectId = subjectId,
-                ModeratorId = moderatorId,
-                Timestamp = timestamp,
-                UnmuteAt = unMuteAtTimestamp,
-                Reason = reason
-            });
+            var entry = await _db.Mutes.AddAsync(mute);
 
             await _db.SaveChangesAsync();
-            return mute.Entity;
+            return entry.Entity;
         }
 
-        public async Task<PermaBan> AddPermaBanAsync(
-            ulong guildId,
-            ulong subjectId,
-            string subjectName,
-            ulong moderatorId,
-            DateTime timestamp,
-            string reason)
+        public async Task<PermaBan> AddPermaBanAsync(PermaBan ban)
         {
             if (_db == null)
                 _db = new RecordContext();
             await _db.Database.EnsureCreatedAsync();
-            var ban = await _db.PermaBans.AddAsync(new PermaBan
-            {
-                GuildId = guildId,
-                SubjectId = subjectId,
-                SubjectName = subjectName,
-                ModeratorId = moderatorId,
-                Timestamp = timestamp,
-                Reason = reason
-            });
+            var entry = await _db.PermaBans.AddAsync(ban);
 
             await _db.SaveChangesAsync();
-            return ban.Entity;
+            return entry.Entity;
         }
 
-        public async Task<TempBan> AddTempBanAsync(
-            ulong guildId,
-            ulong subjectId,
-            string subjectName,
-            ulong moderatorId,
-            DateTime timestamp,
-            DateTime unBanAtTimestamp,
-            string reason)
+        public async Task<TempBan> AddTempBanAsync(TempBan ban)
         {
             if (_db == null)
                 _db = new RecordContext();
             await _db.Database.EnsureCreatedAsync();
-            var ban = await _db.TempBans.AddAsync(new TempBan
-            {
-                Active = true,
-                GuildId = guildId,
-                SubjectId = subjectId,
-                SubjectName = subjectName,
-                ModeratorId = moderatorId,
-                Timestamp = timestamp,
-                UnbanAt = unBanAtTimestamp,
-                Reason = reason
-            });
+            var entry = await _db.TempBans.AddAsync(ban);
 
             await _db.SaveChangesAsync();
-            return ban.Entity;
+            return entry.Entity;
         }
 
-        public async Task<SoftBan> AddSoftBanAsync(
-            ulong guildId,
-            ulong subjectId,
-            string subjectName,
-            ulong moderatorId,
-            DateTime timestamp,
-            string reason)
+        public async Task<SoftBan> AddSoftBanAsync(SoftBan ban)
         {
             if (_db == null)
                 _db = new RecordContext();
             await _db.Database.EnsureCreatedAsync();
-            var ban = await _db.SoftBans.AddAsync(new SoftBan
-            {
-                GuildId = guildId,
-                SubjectId = subjectId,
-                SubjectName = subjectName,
-                ModeratorId = moderatorId,
-                Timestamp = timestamp,
-                Reason = reason
-            });
+            var entry = await _db.SoftBans.AddAsync(ban);
 
             await _db.SaveChangesAsync();
-            return ban.Entity;
+            return entry.Entity;
         }
 
         public async Task DeactivateBanAsync(int key)

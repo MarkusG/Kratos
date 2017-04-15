@@ -99,7 +99,16 @@ namespace Kratos.Services
                     ? author.Username
                     : $"{author.Username} (nickname: {author.Nickname})";
                 await _log.LogModMessageAsync($"I automatically muted {name} ({author.Id}) for {GlobalBlacklist.MuteTime.Humanize(5)} for violating the word blacklist in {(m.Channel as SocketTextChannel).Mention}: `{m.Content}`");
-                mute = await _records.AddMuteAsync(guild.Id, author.Id, 0, DateTime.UtcNow, DateTime.UtcNow.Add(GlobalBlacklist.MuteTime), "N/A (BLACKLIST AUTO-MUTE)");
+                mute = await _records.AddMuteAsync(new Mute
+                {
+                    GuildId = guild.Id,
+                    SubjectId = author.Id,
+                    ModeratorId = 0,
+                    Timestamp = DateTime.UtcNow,
+                    UnmuteAt = DateTime.UtcNow.Add(GlobalBlacklist.MuteTime),
+                    Reason = "N/A (BLACKLIST AUTO-MUTE)",
+                    Active = true
+                });
             }
             else
             {
@@ -108,7 +117,16 @@ namespace Kratos.Services
                     ? author.Username
                     : $"{author.Username} (nickname: {author.Nickname})";
                 await _log.LogModMessageAsync($"I automatically muted {name} ({author.Id}) for {violation.Blacklist.MuteTime.Humanize(5)} for violating the word blacklist in {(m.Channel as SocketTextChannel).Mention}: `{m.Content}`");
-                mute = await _records.AddMuteAsync(guild.Id, author.Id, 0, DateTime.UtcNow, DateTime.UtcNow.Add(violation.Blacklist.MuteTime), "N/A (BLACKLIST AUTO-MUTE)");
+                mute = await _records.AddMuteAsync(new Mute
+                {
+                    GuildId = guild.Id,
+                    SubjectId = author.Id,
+                    ModeratorId = 0,
+                    Timestamp = DateTime.UtcNow,
+                    UnmuteAt = DateTime.UtcNow.Add(violation.Blacklist.MuteTime),
+                    Reason = "N/A (BLACKLIST AUTO-MUTE)",
+                    Active = true
+                });
             }
             _records.DisposeContext();
             _unpunish.Mutes.Add(mute);
