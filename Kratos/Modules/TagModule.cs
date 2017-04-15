@@ -5,7 +5,7 @@ using System.Linq;
 using Discord.Commands;
 using Kratos.Services;
 using Kratos.Preconditions;
-using Kratos.Data.Models;
+using Kratos.Data;
 
 namespace Kratos.Modules
 {

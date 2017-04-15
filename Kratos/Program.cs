@@ -25,6 +25,7 @@ namespace Kratos
         private LogService _log;
         private SlowmodeService _slowmode;
         private RatelimitService _ratelimit;
+        private AliasTrackingService _aliases;
         private CommandHandler _commands;
         private DependencyMap _map;
         private CoreConfig _config;
@@ -74,6 +75,9 @@ namespace Kratos
 
             _blacklist = new BlacklistService(_client, _unpunish, _records, _log, _config);
 
+            _aliases = new AliasTrackingService(_client);
+            await _aliases.LoadConfigurationAsync();
+
             _permissions = new PermissionsService();
             _permissions.LoadPermissions(Assembly.GetEntryAssembly());
             await _permissions.LoadConfigurationAsync();
@@ -81,6 +85,7 @@ namespace Kratos
             // Instantiate the dependency map and add our services and client to it.
             _map = new DependencyMap();
             _map.Add(_blacklist);
+            _map.Add(_aliases);
             _map.Add(_permissions);
             _map.Add(_usernotes);
             _map.Add(_records);

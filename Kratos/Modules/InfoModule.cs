@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Text;
 using System.Linq;
@@ -6,7 +7,7 @@ using Discord;
 using Discord.WebSocket;
 using Discord.Commands;
 using Kratos.Preconditions;
-using System.Diagnostics;
+using Kratos.Services;
 using Humanizer;
 
 namespace Kratos.Modules
@@ -16,6 +17,7 @@ namespace Kratos.Modules
     public class InfoModule : ModuleBase
     {
         private DiscordSocketClient _client;
+        private AliasTrackingService _aliases;
 
         [Command("user")]
         [Summary("Get information about a user")]
@@ -78,6 +80,32 @@ namespace Kratos.Modules
                     x.Name = "Roles";
                     x.Value = string.Join(", ", user.Roles.Select(r => r.Name));
                 });
+            var usernames = await _aliases.GetUsernamesAsync(user.Id);
+            if (usernames.Count() != 0)
+            {
+                var usernamesList = new StringBuilder();
+                foreach (var u in usernames)
+                    usernamesList.AppendLine($"Until {u.Until}: {u.Alias}");
+                response.AddField(x =>
+                {
+                    x.IsInline = false;
+                    x.Name = "Past usernames";
+                    x.Value = usernamesList.ToString();
+                });
+            }
+            var nicknames = (await _aliases.GetNicknamesAsync(user.Id)).Where(n => n.GuildId == Context.Guild.Id);
+            if (nicknames.Count() != 0)
+            {
+                var nicknamesList = new StringBuilder();
+                foreach (var n in nicknames)
+                    nicknamesList.AppendLine($"Until {n.Until}: {n.Alias}");
+                response.AddField(x =>
+                {
+                    x.IsInline = false;
+                    x.Name = "Past nicknames";
+                    x.Value = nicknamesList.ToString();
+                });
+            }
             await ReplyAsync("", embed: response);
         }
 
@@ -161,9 +189,23 @@ namespace Kratos.Modules
             await ReplyAsync("", embed: response);
         }
 
-        [Command("help"), Summary("Displays this help page")]
-        public async Task Help() =>
-            await ReplyAsync("https://github.com/MarkusGordathian/Kratos/wiki/Commands");
+        [Command("logaliases")]
+        [Summary("Toggle logging of user alias changes (nicknames/usernames)")]
+        [RequireCustomPermission("info.manage")]
+        public async Task LogAliases()
+        {
+            if (_aliases.Enabled)
+            {
+                _aliases.Disable();
+                await ReplyAsync(":ok: Logging of alias changes disabled.");
+            }
+            else
+            {
+                _aliases.Enable();
+                await ReplyAsync(":ok: Logging of alias changes enabled.");
+            }
+            await _aliases.SaveConfigurationAsync();
+        }
 
         [Command("ping")]
         [Summary("Returns \"Pong!\" and the bot's latency to Discord")]
@@ -196,9 +238,14 @@ namespace Kratos.Modules
             await ReplyAsync(response.ToString().Replace("@everyone", "everyonerole"));
         }
 
-        public InfoModule(DiscordSocketClient c)
+        [Command("help"), Summary("Displays this help page")]
+        public async Task Help() =>
+            await ReplyAsync("https://github.com/MarkusGordathian/Kratos/wiki/Commands");
+
+        public InfoModule(DiscordSocketClient c, AliasTrackingService a)
         {
             _client = c;
+            _aliases = a;
         }
     }
 }

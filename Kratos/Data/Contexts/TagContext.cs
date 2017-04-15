@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Kratos.Data.Models;
+using Kratos.Data;
 
-namespace Kratos.Data.Contexts
+namespace Kratos.Data
 {
     class TagContext : DbContext
     {

@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
-using Kratos.Data.Contexts;
-using Kratos.Data.Models;
+using Kratos.Data;
 
 namespace Kratos.Services
 {

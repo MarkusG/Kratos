@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Kratos.Data.Models
+namespace Kratos.Data
 {
     public class TagValue
     {
