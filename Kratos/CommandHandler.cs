@@ -65,7 +65,7 @@ namespace Kratos
                 if (result.IsSuccess)
                 {
                     var author = message.Author as SocketGuildUser;
-                    await _log.LogModMessageAsync($"{author.Nickname ?? author.Username} executed a command:\n`{m.Content}`");
+                    await _log.LogModMessageAsync($"{author.Nickname ?? author.Username} executed a command:\n```{m.Content}```");
                 }
             }
         }
