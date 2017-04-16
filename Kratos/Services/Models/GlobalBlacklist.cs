@@ -13,7 +13,10 @@ namespace Kratos.Services.Models
 
         public bool Enabled { get; set; } = true;
 
-        public bool CheckViolation(string message) =>
-            Enabled && List.Any(x => x.IsMatch(message));
+        public bool CheckViolation(string message)
+        {
+            if (List == null) return false;
+            return Enabled && List.Any(x => x.IsMatch(message));
+        }
     }
 }

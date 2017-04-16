@@ -39,7 +39,7 @@ namespace Kratos
             if (!(message.Channel is SocketGuildChannel)) return;
             // Create a number to track where the prefix ends and the command begins
             int argPos = 0;
-            // Determine if the message is a command, based on if it starts with '!' or a mention prefix
+            // Determine if the message is a command, based on if it starts with the bot's prefix or a mention prefix
             if (message.HasStringPrefix(_config.Prefix, ref argPos) || _config.MentionPrefixEnabled(message, _client, ref argPos))
             {
                 // Create a Command Context
