@@ -26,7 +26,10 @@ namespace Kratos.Configs
 
         public async Task SaveAsync()
         {
-            using (var configStream = File.OpenWrite(Path.Combine(Directory.GetCurrentDirectory(), "config", "core.json")))
+            if (!File.Exists(Path.Combine(Directory.GetCurrentDirectory(), "config", "core.json")))
+                File.Create(Path.Combine(Directory.GetCurrentDirectory(), "config", "core.json")).Dispose();
+
+            using (var configStream = new FileStream(Path.Combine(Directory.GetCurrentDirectory(), "config", "core.json"), FileMode.Truncate))
             {
                 using (var configWriter = new StreamWriter(configStream))
                 {
