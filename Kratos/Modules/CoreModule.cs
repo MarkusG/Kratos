@@ -40,8 +40,8 @@ namespace Kratos.Modules
                 response.AppendLine();
                 foreach (var c in m.Commands)
                 {
-                    var prefixlessAliases = c.Aliases.Select(x => x.Remove(0, c.Module.Aliases.FirstOrDefault().Length));
-                    response.Append($"## ` {string.Join(" | ", prefixlessAliases)}");
+                    var prefixlessAliases = c.Aliases.Select(x => x.Replace(c.Module.Aliases.FirstOrDefault() + " ", ""));
+                    response.Append($"## ` {string.Join(" | ", prefixlessAliases)} ");
                     foreach (var p in c.Parameters)
                     {
                         if (p.IsOptional)
@@ -156,6 +156,16 @@ namespace Kratos.Modules
         public async Task Username([Summary("The bot's new username")] string content)
         {
             await _client.CurrentUser.ModifyAsync(x => x.Username = content);
+            await ReplyAsync(":ok:");
+        }
+
+        [Command("prefix")]
+        [Summary("Changes the bot's command prefix")]
+        [RequireCustomPermission("core.prefix")]
+        public async Task Prefix([Summary("New prefix"), Remainder] string prefix)
+        {
+            _config.Prefix = prefix;
+            await _config.SaveAsync();
             await ReplyAsync(":ok:");
         }
 
