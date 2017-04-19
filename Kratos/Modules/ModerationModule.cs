@@ -40,6 +40,9 @@ namespace Kratos.Modules
                 return;
             }
 
+            var dmChannel = await user.CreateDMChannelAsync();
+            await dmChannel.SendMessageAsync($"You've been permanently banned from {user.Guild.Name} for the following reason:\n```{reason}```");
+
             await Context.Guild.AddBanAsync(user, pruneDays);
             var name = user.Nickname == null
                 ? user.Username
@@ -147,6 +150,9 @@ namespace Kratos.Modules
                 return;
             }
 
+            var dmChannel = await user.CreateDMChannelAsync();
+            await dmChannel.SendMessageAsync($"You've been temporarily banned from {user.Guild.Name} for {time.Humanize(5)} for the following reason:\n```{reason}```");
+            
             await Context.Guild.AddBanAsync(user, pruneDays);
             var name = user.Nickname == null
                 ? user.Username
@@ -185,6 +191,11 @@ namespace Kratos.Modules
                 return;
             }
 
+            var dmChannel = await user.CreateDMChannelAsync();
+            await dmChannel.SendMessageAsync($"You've been softly banned from {user.Guild.Name} for the following reason:" +
+                                             $"\n```{reason}```" +
+                                             $"\nNote: A softban is simply a kick with message purging.");
+
             await Context.Guild.AddBanAsync(user, pruneDays);
             await Context.Guild.RemoveBanAsync(user);
             var name = user.Nickname == null
@@ -221,6 +232,9 @@ namespace Kratos.Modules
                 await ReplyAsync(":x: You cannot mute someone above or equal to you in the role hierarchy.");
                 return;
             }
+
+            var dmChannel = await user.CreateDMChannelAsync();
+            await dmChannel.SendMessageAsync($"You've been muted in {user.Guild.Name} for {time.Humanize(5)} for the following reason:\n```{reason}```");
 
             var muteRole = Context.Guild.GetRole(_config.MuteRoleId);
             await user.AddRoleAsync(muteRole);
