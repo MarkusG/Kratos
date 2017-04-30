@@ -16,6 +16,7 @@ namespace Kratos.Modules
     [Summary("A group of moderation commands")]
     public class ModerationModule : ModuleBase
     {
+        private ModerationService _service;
         private RecordService _records;
         private UnpunishService _unpunish;
         private BlacklistService _blacklist;
@@ -40,8 +41,12 @@ namespace Kratos.Modules
                 return;
             }
 
-            var dmChannel = await user.CreateDMChannelAsync();
-            await dmChannel.SendMessageAsync($"You've been permanently banned from {user.Guild.Name} for the following reason:\n```{reason}```");
+            if (_service.PermaBanMessage != null && _service.UnmuteMessage != "")
+            {
+                var dmChannel = await user.CreateDMChannelAsync();
+                await dmChannel.SendMessageAsync(_service.PermaBanMessage.Replace("{g}", user.Guild.Name)
+                                                                         .Replace("{r}", reason));
+            }
 
             await Context.Guild.AddBanAsync(user, pruneDays);
             var name = user.Nickname == null
@@ -150,8 +155,13 @@ namespace Kratos.Modules
                 return;
             }
 
-            var dmChannel = await user.CreateDMChannelAsync();
-            await dmChannel.SendMessageAsync($"You've been temporarily banned from {user.Guild.Name} for {time.Humanize(5)} for the following reason:\n```{reason}```");
+            if (_service.TempBanMessage != null && _service.UnmuteMessage != "")
+            {
+                var dmChannel = await user.CreateDMChannelAsync();
+                await dmChannel.SendMessageAsync(_service.TempBanMessage.Replace("{g}", user.Guild.Name)
+                                                                        .Replace("{t}", time.Humanize(5))
+                                                                        .Replace("{r}", reason));
+            }
             
             await Context.Guild.AddBanAsync(user, pruneDays);
             var name = user.Nickname == null
@@ -191,10 +201,12 @@ namespace Kratos.Modules
                 return;
             }
 
-            var dmChannel = await user.CreateDMChannelAsync();
-            await dmChannel.SendMessageAsync($"You've been softly banned from {user.Guild.Name} for the following reason:" +
-                                             $"\n```{reason}```" +
-                                             $"\nNote: A softban is simply a kick with message purging.");
+            if (_service.SoftBanMessage != null && _service.UnmuteMessage != "")
+            {
+                var dmChannel = await user.CreateDMChannelAsync();
+                await dmChannel.SendMessageAsync(_service.SoftBanMessage.Replace("{g}", user.Guild.Name)
+                                                                        .Replace("{r}", reason));
+            }
 
             await Context.Guild.AddBanAsync(user, pruneDays);
             await Context.Guild.RemoveBanAsync(user);
@@ -233,8 +245,13 @@ namespace Kratos.Modules
                 return;
             }
 
-            var dmChannel = await user.CreateDMChannelAsync();
-            await dmChannel.SendMessageAsync($"You've been muted in {user.Guild.Name} for {time.Humanize(5)} for the following reason:\n```{reason}```");
+            if (_service.MuteMessage != null && _service.UnmuteMessage != "")
+            {
+                var dmChannel = await user.CreateDMChannelAsync();
+                await dmChannel.SendMessageAsync(_service.MuteMessage.Replace("{g}", user.Guild.Name)
+                                                                     .Replace("{t}", time.Humanize(5))
+                                                                     .Replace("{r}", reason));
+            }
 
             var muteRole = Context.Guild.GetRole(_config.MuteRoleId);
             await user.AddRoleAsync(muteRole);
@@ -268,8 +285,11 @@ namespace Kratos.Modules
                 return;
             }
 
-            var dmChannel = await user.CreateDMChannelAsync();
-            await dmChannel.SendMessageAsync($"You've been unmuted in {user.Guild.Name}.");
+            if (_service.UnmuteMessage != null && _service.UnmuteMessage != "")
+            {
+                var dmChannel = await user.CreateDMChannelAsync();
+                await dmChannel.SendMessageAsync(_service.UnmuteMessage.Replace("{g}", user.Guild.Name));
+            }
 
             var muteRole = Context.Guild.GetRole(_config.MuteRoleId);
             await user.RemoveRoleAsync(muteRole);
@@ -301,8 +321,30 @@ namespace Kratos.Modules
             await Context.Message.DeleteAsync();
         }
 
-        public ModerationModule(RecordService r, UnpunishService u, BlacklistService b, LogService l, CoreConfig config)
+        [Command("config")]
+        [Summary("Configure moderation-related features.")]
+        [RequireCustomPermission("mod.config")]
+        public async Task Config([Summary("The setting you want to edit")] string setting,
+                                 [Summary("The new value for the setting")] string value = null)
         {
+            switch (setting.ToLower())
+            {
+                case "tempmessage": _service.TempBanMessage = value; break;
+                case "permamessage": _service.PermaBanMessage = value; break;
+                case "mutemessage": _service.MuteMessage = value; break;
+                case "unmutemessage": _service.UnmuteMessage = value; break;
+                case "softbanmessage": _service.SoftBanMessage = value; break;
+                default:
+                    await ReplyAsync($"Invalid setting: `{setting}`");
+                    return;
+            }
+            await _service.SaveConfigurationAsync();
+            await ReplyAsync(":ok:");
+        }
+
+        public ModerationModule(RecordService r, UnpunishService u, BlacklistService b, LogService l, CoreConfig config, ModerationService m)
+        {
+            _service = m;
             _unpunish = u;
             _records = r;
             _blacklist = b;

@@ -26,6 +26,7 @@ namespace Kratos
         private SlowmodeService _slowmode;
         private RatelimitService _ratelimit;
         private AliasTrackingService _aliases;
+        private ModerationService _mod;
         private CommandHandler _commands;
         private DependencyMap _map;
         private CoreConfig _config;
@@ -54,6 +55,9 @@ namespace Kratos
                 _config = await CoreConfig.CreateNewAsync();
 
             // Set up services
+            _mod = new ModerationService();
+            await _mod.LoadConfigurationAsync();
+
             _usernotes = new UsernoteService();
 
             _records = new RecordService();
@@ -84,6 +88,7 @@ namespace Kratos
             
             // Instantiate the dependency map and add our services and client to it.
             _map = new DependencyMap();
+            _map.Add(_mod);
             _map.Add(_blacklist);
             _map.Add(_aliases);
             _map.Add(_permissions);
