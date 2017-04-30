@@ -253,6 +253,32 @@ namespace Kratos.Modules
             await ReplyAsync(":ok:");
         }
 
+        [Command("unmute")]
+        [Summary("Unmutes a user")]
+        [RequireCustomPermission("mod.mute")]
+        public async Task Unmute([Summary("The user to unmute")] SocketGuildUser user)
+        {
+            var author = Context.User as SocketGuildUser;
+            var authorsHighestRole = author.Roles.OrderByDescending(x => x.Position).First();
+            var usersHighestRole = user.Roles.OrderByDescending(x => x.Position).First();
+
+            if (usersHighestRole.Position >= authorsHighestRole.Position)
+            {
+                await ReplyAsync(":x: You cannot unmute someone above or equal to you in the role hierarchy.");
+                return;
+            }
+
+            var dmChannel = await user.CreateDMChannelAsync();
+            await dmChannel.SendMessageAsync($"You've been unmuted in {user.Guild.Name}.");
+
+            var muteRole = Context.Guild.GetRole(_config.MuteRoleId);
+            await user.RemoveRoleAsync(muteRole);
+            await _records.DeactivateMutesForUserAsync(user.Id);
+            _records.DisposeContext();
+            _unpunish.Mutes.RemoveAll(x => x.SubjectId == user.Id);
+            await ReplyAsync(":ok:");
+        }
+
         [Command("clean")]
         [Summary("Deletes a set number of messages from the channel, as well as the message calling the command.")]
         [RequireCustomPermission("mod.clean")]

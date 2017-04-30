@@ -75,6 +75,18 @@ namespace Kratos.Services
             await _db.SaveChangesAsync();
         }
 
+        public async Task DeactivateMutesForUserAsync(ulong id)
+        {
+            if (_db == null)
+                _db = new RecordContext();
+            await _db.Database.EnsureCreatedAsync();
+            var mutes = _db.Mutes.OrderByDescending(x => x.Timestamp); // Oldest first
+            var userMutes = mutes.Where(x => x.SubjectId == id);
+            foreach (var mute in userMutes)
+                mute.Active = false;
+            await _db.SaveChangesAsync();
+        }
+
         public async Task<IEnumerable<TempBan>> GetActiveTempBansAsync()
         {
             if (_db == null)
