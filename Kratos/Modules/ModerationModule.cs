@@ -279,21 +279,26 @@ namespace Kratos.Modules
             await ReplyAsync(":ok:");
         }
 
-        [Command("clean")]
+        [Command("clean", RunMode = RunMode.Async)]
         [Summary("Deletes a set number of messages from the channel, as well as the message calling the command.")]
         [RequireCustomPermission("mod.clean")]
-        public async Task Clean([Summary("The number of messages to delete. (max 99)")] int num)
+        public async Task Clean([Summary("The number of messages to delete")] int amount)
         {
-            if (num > 99)
-            {
-                await ReplyAsync("Specified number exceeds the 99 message limit.");
-                return;
-            }
             var channel = Context.Channel as SocketTextChannel;
-            var messagesToDelete = await channel.GetMessagesAsync(num + 1).Flatten();
-            await channel.DeleteMessagesAsync(messagesToDelete);
-            var author = Context.User as SocketGuildUser;
-            await _log.LogModMessageAsync($"{author.Nickname ?? author.Username} cleaned {num} messages in {(Context.Channel as SocketTextChannel).Mention}");
+            var toDelete = channel.GetMessagesAsync(amount);
+                await toDelete.ForEachAsync(async x =>
+                {
+                    try
+                    {
+                        await channel.DeleteMessagesAsync(x);
+                    }
+                    catch (ArgumentOutOfRangeException)
+                    {
+                        await ReplyAsync(":warning: Some messages older than 2 weeks. Specify a lesser amount.");
+                        return;
+                    }
+                });
+            await Context.Message.DeleteAsync();
         }
 
         public ModerationModule(RecordService r, UnpunishService u, BlacklistService b, LogService l, CoreConfig config)
