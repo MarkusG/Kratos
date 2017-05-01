@@ -1,5 +1,5 @@
 # Kratos #
-Kratos is a bot built for ultimate customizeability and control. Join the development and support Discord guild [here](https://discord.gg/VZHYnhY).
+Kratos is a bot built for ultimate customizability and control. Join the development and support Discord guild [here](https://discord.gg/VZHYnhY).
 
 Kratos is currently in beta (if you even want to go **that** far). Everything is subject to change.
 # Platform #
