@@ -4,6 +4,7 @@ using System.Reflection;
 using Discord;
 using Discord.WebSocket;
 using Discord.Commands;
+using Microsoft.Extensions.DependencyInjection;
 using Kratos.Configs;
 using Kratos.Services;
 
@@ -11,19 +12,19 @@ namespace Kratos
 {
     public class CommandHandler
     {
-        private IDependencyMap _map;
+        private IServiceProvider _services;
         private DiscordSocketClient _client;
         private CommandService _commands;
         private CoreConfig _config;
         private LogService _log;
 
-        public CommandHandler(IDependencyMap map)
+        public CommandHandler(IServiceProvider services)
         {
-            _client = map.Get<DiscordSocketClient>();
-            _config = map.Get<CoreConfig>();
-            _log = map.Get<LogService>();
-            _commands = new CommandService();
-            _map = map;
+            _client = services.GetService<DiscordSocketClient>();
+            _config = services.GetService<CoreConfig>();
+            _log = services.GetService<LogService>();
+            _commands = services.GetService<CommandService>();
+            _services = services;
         }
 
         public async Task InstallAsync()
@@ -46,7 +47,7 @@ namespace Kratos
                 var context = new CommandContext(_client, message);
                 // Execute the command. (result does not indicate a return value, 
                 // rather an object stating if the command executed succesfully)
-                var result = await _commands.ExecuteAsync(context, argPos, _map);
+                var result = await _commands.ExecuteAsync(context, argPos, _services);
                 if (!result.IsSuccess)
                 {
                     switch (result)

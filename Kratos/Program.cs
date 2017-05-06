@@ -5,6 +5,7 @@ using System.Reflection;
 using Discord;
 using Discord.WebSocket;
 using Discord.Commands;
+using Microsoft.Extensions.DependencyInjection;
 using Kratos.Services;
 using Kratos.Configs;
 
@@ -28,7 +29,6 @@ namespace Kratos
         private AliasTrackingService _aliases;
         private ModerationService _mod;
         private CommandHandler _commands;
-        private DependencyMap _map;
         private CoreConfig _config;
         #endregion
 
@@ -85,25 +85,12 @@ namespace Kratos
             _permissions = new PermissionsService();
             _permissions.LoadPermissions(Assembly.GetEntryAssembly());
             await _permissions.LoadConfigurationAsync();
-            
+
             // Instantiate the dependency map and add our services and client to it.
-            _map = new DependencyMap();
-            _map.Add(_mod);
-            _map.Add(_blacklist);
-            _map.Add(_aliases);
-            _map.Add(_permissions);
-            _map.Add(_usernotes);
-            _map.Add(_records);
-            _map.Add(_tags);
-            _map.Add(_unpunish);
-            _map.Add(_log);
-            _map.Add(_slowmode);
-            _map.Add(_ratelimit);
-            _map.Add(_client);
-            _map.Add(_config);
+            var serviceProvider = ConfigureServices();
 
             // Set up command handler
-            _commands = new CommandHandler(_map);
+            _commands = new CommandHandler(serviceProvider);
             await _commands.InstallAsync();
 
             // Set up an event handler to execute some state-reliant startup tasks
@@ -138,6 +125,27 @@ namespace Kratos
             Console.ForegroundColor = ConsoleColor.Gray;
 
             return Task.CompletedTask;
+        }
+
+        private IServiceProvider ConfigureServices()
+        {
+            var services = new ServiceCollection();
+            services.AddSingleton(_mod);
+            services.AddSingleton(_blacklist);
+            services.AddSingleton(_aliases);
+            services.AddSingleton(_permissions);
+            services.AddSingleton(_usernotes);
+            services.AddSingleton(_records);
+            services.AddSingleton(_tags);
+            services.AddSingleton(_unpunish);
+            services.AddSingleton(_log);
+            services.AddSingleton(_slowmode);
+            services.AddSingleton(_ratelimit);
+            services.AddSingleton(_client);
+            services.AddSingleton(_config);
+            services.AddSingleton(new CommandService());
+
+            return new DefaultServiceProviderFactory().CreateServiceProvider(services);
         }
     }
 }

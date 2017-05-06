@@ -9,9 +9,9 @@
     <None Remove="config\**" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Discord.Net.Commands" Version="1.0.0-rc-00667" />
-    <PackageReference Include="Discord.Net.WebSocket" Version="1.0.0-rc-00667" />
-    <PackageReference Include="Humanizer" Version="2.1.0" />
+    <PackageReference Include="Discord.Net.Commands" Version="1.0.0-rc2-00736" />
+    <PackageReference Include="Discord.Net.WebSocket" Version="1.0.0-rc2-00736" />
+    <PackageReference Include="Humanizer" Version="2.2.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="1.1.1" />
   </ItemGroup>
 </Project>

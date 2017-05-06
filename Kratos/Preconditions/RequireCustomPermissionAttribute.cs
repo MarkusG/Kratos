@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Discord.WebSocket;
 using Discord.Commands;
+using Microsoft.Extensions.DependencyInjection;
 using Kratos.Services;
 using Kratos.Configs;
 
@@ -17,10 +18,10 @@ namespace Kratos.Preconditions
             Permission = permission;
         }
 
-        public async override Task<PreconditionResult> CheckPermissions(ICommandContext context, CommandInfo command, IDependencyMap map)
+        public async override Task<PreconditionResult> CheckPermissions(ICommandContext context, CommandInfo command, IServiceProvider services)
         {
-            var service = map.Get<PermissionsService>();
-            var config = map.Get<CoreConfig>();
+            var service = services.GetService<PermissionsService>();
+            var config = services.GetService<CoreConfig>();
             bool hasPermission = false;
             foreach (var r in (context.User as SocketGuildUser).Roles)
             {
