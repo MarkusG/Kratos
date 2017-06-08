@@ -18,6 +18,7 @@ namespace Kratos
             new Program().MainAsync(args).GetAwaiter().GetResult();
 
         public static string GetConfigurationPath(string name) => Path.Combine(Directory.GetCurrentDirectory(), "config", name);
+        public static string GetLogPath(string name) => Path.Combine(Directory.GetCurrentDirectory(), "log", name);
 
         private IServiceProvider _services;
 
@@ -41,6 +42,7 @@ namespace Kratos
                 });
 
             Directory.CreateDirectory(GetConfigurationPath(""));
+            Directory.CreateDirectory(GetLogPath(""));
 
             var botConfig = _services.GetService<BotConfiguration>();
             await botConfig.LoadAsync();
@@ -62,7 +64,6 @@ namespace Kratos
             var client = _services.GetService<DiscordSocketClient>();
             var localLog = _services.GetService<LocalLogService>();
 
-            localLog.LogToFile = options.LogToFile;
             client.Log += localLog.Log;
 
             var handler = new CommandHandler(_services);

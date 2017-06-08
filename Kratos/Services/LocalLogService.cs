@@ -7,37 +7,38 @@ namespace Kratos.Services
 {
     public class LocalLogService
     {
-        private StreamWriter _logFile;
-
-        public bool LogToFile { get; set; }
-
         public async Task Log(LogMessage m)
         {
+            Console.Write(DateTime.UtcNow.ToString("hh:mm:ss"));
             switch (m.Severity)
             {
                 case LogSeverity.Warning: Console.ForegroundColor = ConsoleColor.Yellow; break;
                 case LogSeverity.Error: Console.ForegroundColor = ConsoleColor.Red; break;
                 case LogSeverity.Critical: Console.ForegroundColor = ConsoleColor.DarkRed; break;
-                case LogSeverity.Verbose: Console.ForegroundColor = ConsoleColor.White; break;
+                case LogSeverity.Verbose: Console.ForegroundColor = ConsoleColor.Cyan; break;
+                case LogSeverity.Info: Console.ForegroundColor = ConsoleColor.Green; break;
+                case LogSeverity.Debug: Console.ForegroundColor = ConsoleColor.Magenta; break;
             }
 
-            Console.WriteLine(m.ToString());
-            if (m.Exception != null)
-                Console.WriteLine(m.Exception);
+            Console.CursorLeft = 9;
+            Console.Write($"[{m.Severity}]");
             Console.ForegroundColor = ConsoleColor.Gray;
+            Console.CursorLeft = 19;
+            Console.Write($"{m.Source}:");
+            Console.CursorLeft = 28;
+            Console.WriteLine(m.Message);
 
-            if (!LogToFile) return;
-            if (_logFile == null) InitializeFileLogging();
-
-            await _logFile.WriteLineAsync(m.ToString());
-            await _logFile.FlushAsync();
-        }
-
-        private void InitializeFileLogging()
-        {
-            Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "log"));
-            string path = Path.Combine(Directory.GetCurrentDirectory(), "log", DateTime.UtcNow.ToString("dd-MM-yyyy--HH-mm-ss") + ".txt");
-            _logFile = new StreamWriter(new FileStream(path, FileMode.CreateNew));
+            if (m.Exception != null)
+            {
+                var path = Program.GetLogPath(DateTime.UtcNow.ToString("dd-MM-yyyy HH-mm-ss") + " " + nameof(m.Exception) + ".txt");
+                using (var stream = new FileStream(path, FileMode.CreateNew))
+                {
+                    using (var writer = new StreamWriter(stream))
+                    {
+                        await writer.WriteAsync(m.Exception.ToString());
+                    }
+                }
+            }
         }
     }
 }
