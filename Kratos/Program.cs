@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Discord;
 using Discord.WebSocket;
+using Discord.Commands;
 using CommandLine;
 using Kratos.Configuration;
 using Kratos.Services;
@@ -60,9 +61,13 @@ namespace Kratos
 
             var client = _services.GetService<DiscordSocketClient>();
             var localLog = _services.GetService<LocalLogService>();
-            localLog.LogToFile = options.LogToFile;
 
+            localLog.LogToFile = options.LogToFile;
             client.Log += localLog.Log;
+
+            var handler = new CommandHandler(_services);
+            await handler.InstallCommandsAsync();
+
             await client.LoginAsync(TokenType.Bot, botConfig.Token);
             await client.StartAsync();
             await Task.Delay(-1);
@@ -77,7 +82,11 @@ namespace Kratos
                     LogLevel = LogSeverity.Debug,
                     MessageCacheSize = 500 // Per channel
                 }))
-                .AddSingleton<LocalLogService>();
+                .AddSingleton<LocalLogService>()
+                .AddSingleton(new CommandService(new CommandServiceConfig
+                {
+                    LogLevel = LogSeverity.Debug
+                }));
 
             return collection.BuildServiceProvider();
         }
