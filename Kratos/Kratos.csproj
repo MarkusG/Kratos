@@ -6,6 +6,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="config\**" />
+    <EmbeddedResource Remove="config\**" />
+    <None Remove="config\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Discord.Net.Commands" Version="1.0.0-rc3-00746" />
     <PackageReference Include="Discord.Net.WebSocket" Version="1.0.0-rc3-00746" />
     <PackageReference Include="Humanizer" Version="2.2.0" />

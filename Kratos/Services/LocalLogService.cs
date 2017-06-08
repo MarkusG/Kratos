@@ -39,10 +39,5 @@ namespace Kratos.Services
             string path = Path.Combine(Directory.GetCurrentDirectory(), "log", DateTime.UtcNow.ToString("dd-MM-yyyy--HH-mm-ss") + ".txt");
             _logFile = new StreamWriter(new FileStream(path, FileMode.CreateNew));
         }
-
-        public LocalLogService()
-        {
-            LogToFile = false; // Placeholder until I can get proper CLI argument handling
-        }
     }
 }

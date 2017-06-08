@@ -2,9 +2,10 @@
 using System.Linq;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Discord;
 using Discord.WebSocket;
-using Microsoft.Extensions.DependencyInjection;
+using CommandLine;
 using Kratos.Configuration;
 using Kratos.Services;
 
@@ -24,12 +25,26 @@ namespace Kratos
             Console.Title = "Kratos";
             _services = ConfigureServices();
 
+            CommandLineArguments options = null;
+
+            var result = CommandLine.Parser.Default.ParseArguments<CommandLineArguments>(args)
+                .WithParsed(o => options = o)
+                .WithNotParsed(errors =>
+                {
+                    foreach (var e in errors)
+                    {
+                        Console.WriteLine(e.ToString());
+                    }
+                    Console.WriteLine("Exiting...");
+                    Environment.Exit(0);
+                });
+
             Directory.CreateDirectory(GetConfigurationPath(""));
 
             var botConfig = _services.GetService<BotConfiguration>();
             await botConfig.LoadAsync();
 
-            if (botConfig.Token == null && args.Length < 1)
+            if (botConfig.Token == null && options.Token == null)
             {
                 Console.WriteLine("No token found and none provided via command line arguments. Enter your token or leave blank to exit:");
                 var token = Console.ReadLine();
@@ -37,15 +52,15 @@ namespace Kratos
                 botConfig.Token = token;
                 await botConfig.SaveAsync();
             }
-            else if (botConfig.Token == null && args.Length >= 1)
+            else if (botConfig.Token == null && options.Token != null)
             {
-                var token = args[0];
-                botConfig.Token = token;
+                botConfig.Token = options.Token;
                 await botConfig.SaveAsync();
             }
 
             var client = _services.GetService<DiscordSocketClient>();
             var localLog = _services.GetService<LocalLogService>();
+            localLog.LogToFile = options.LogToFile;
 
             client.Log += localLog.Log;
             await client.LoginAsync(TokenType.Bot, botConfig.Token);
