@@ -38,6 +38,10 @@ namespace Kratos.Services
                         await writer.WriteAsync(m.Exception.ToString());
                     }
                 }
+
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"^ {nameof(m.Exception)} occurred. See {path} for details.");
+                Console.ForegroundColor = ConsoleColor.Gray;
             }
         }
     }

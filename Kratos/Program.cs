@@ -41,6 +41,8 @@ namespace Kratos
                     Environment.Exit(0);
                 });
 
+            Console.WriteLine(options.Token);
+
             Directory.CreateDirectory(GetConfigurationPath(""));
             Directory.CreateDirectory(GetLogPath(""));
 
@@ -55,7 +57,7 @@ namespace Kratos
                 botConfig.Token = token;
                 await botConfig.SaveAsync();
             }
-            else if (botConfig.Token == null && options.Token != null)
+            else if ((botConfig.Token == null && options.Token != null) || (botConfig.Token != null && options.Token != null))
             {
                 botConfig.Token = options.Token;
                 await botConfig.SaveAsync();
