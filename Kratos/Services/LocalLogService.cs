@@ -7,7 +7,7 @@ namespace Kratos.Services
 {
     public class LocalLogService
     {
-        public async Task Log(LogMessage m)
+        public async Task LogAsync(LogMessage m)
         {
             Console.Write(DateTime.UtcNow.ToString("hh:mm:ss"));
             switch (m.Severity)
@@ -30,7 +30,7 @@ namespace Kratos.Services
 
             if (m.Exception != null)
             {
-                var path = Program.GetLogPath(DateTime.UtcNow.ToString("dd-MM-yyyy HH-mm-ss") + " " + nameof(m.Exception) + ".txt");
+                var path = Program.GetLogPath(DateTime.UtcNow.ToString("dd-MM-yyyy HH-mm-ss") + " " + m.Exception.GetType().Name + ".txt");
                 using (var stream = new FileStream(path, FileMode.CreateNew))
                 {
                     using (var writer = new StreamWriter(stream))

@@ -23,9 +23,6 @@ namespace Kratos.Configuration
             }
         }
 
-        public BotConfiguration() : base("bot.json")
-        {
-
-        }
+        public BotConfiguration() : base("bot.json") { }
     }
 }
