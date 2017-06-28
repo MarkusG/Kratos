@@ -12,7 +12,7 @@ using Humanizer;
 
 namespace Kratos.Modules
 {
-    [Name("Moderation Module"), Group("mod")]
+    [Name("Moderation Module")]
     [Summary("A group of moderation commands")]
     public class ModerationModule : ModuleBase
     {
@@ -43,7 +43,7 @@ namespace Kratos.Modules
 
             if (_service.PermaBanMessage != null && _service.UnmuteMessage != "")
             {
-                var dmChannel = await user.CreateDMChannelAsync();
+                var dmChannel = await user.GetOrCreateDMChannelAsync();
                 await dmChannel.SendMessageAsync(_service.PermaBanMessage.Replace("{g}", user.Guild.Name)
                                                                          .Replace("{r}", reason));
             }
@@ -157,7 +157,7 @@ namespace Kratos.Modules
 
             if (_service.TempBanMessage != null && _service.UnmuteMessage != "")
             {
-                var dmChannel = await user.CreateDMChannelAsync();
+                var dmChannel = await user.GetOrCreateDMChannelAsync();
                 await dmChannel.SendMessageAsync(_service.TempBanMessage.Replace("{g}", user.Guild.Name)
                                                                         .Replace("{t}", time.Humanize(5))
                                                                         .Replace("{r}", reason));
@@ -203,7 +203,7 @@ namespace Kratos.Modules
 
             if (_service.SoftBanMessage != null && _service.UnmuteMessage != "")
             {
-                var dmChannel = await user.CreateDMChannelAsync();
+                var dmChannel = await user.GetOrCreateDMChannelAsync();
                 await dmChannel.SendMessageAsync(_service.SoftBanMessage.Replace("{g}", user.Guild.Name)
                                                                         .Replace("{r}", reason));
             }
@@ -247,7 +247,7 @@ namespace Kratos.Modules
 
             if (_service.MuteMessage != null && _service.UnmuteMessage != "")
             {
-                var dmChannel = await user.CreateDMChannelAsync();
+                var dmChannel = await user.GetOrCreateDMChannelAsync();
                 await dmChannel.SendMessageAsync(_service.MuteMessage.Replace("{g}", user.Guild.Name)
                                                                      .Replace("{t}", time.Humanize(5))
                                                                      .Replace("{r}", reason));
@@ -287,7 +287,7 @@ namespace Kratos.Modules
 
             if (_service.UnmuteMessage != null && _service.UnmuteMessage != "")
             {
-                var dmChannel = await user.CreateDMChannelAsync();
+                var dmChannel = await user.GetOrCreateDMChannelAsync();
                 await dmChannel.SendMessageAsync(_service.UnmuteMessage.Replace("{g}", user.Guild.Name));
             }
 

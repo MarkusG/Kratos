@@ -48,9 +48,9 @@ namespace Kratos.Modules
                 .WithAuthor(x =>
                 {
                     x.Name = name;
-                    x.IconUrl = user.GetAvatarUrl();
+                    x.IconUrl = new Uri(user.GetAvatarUrl());
                 })
-                .WithThumbnailUrl(user.GetAvatarUrl());
+                .WithThumbnailUrl(new Uri(user.GetAvatarUrl()));
 
             foreach (var n in notes)
             {

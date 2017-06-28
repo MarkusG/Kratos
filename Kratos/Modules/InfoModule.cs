@@ -26,7 +26,7 @@ namespace Kratos.Modules
         {
             var response = new EmbedBuilder()
                 .WithTitle($"User information for {user.Username}#{user.Discriminator}")
-                .WithThumbnailUrl(user.GetAvatarUrl())
+                .WithThumbnailUrl(new Uri(user.GetAvatarUrl()))
                 .AddField(x =>
                 {
                     x.IsInline = true;
@@ -119,7 +119,7 @@ namespace Kratos.Modules
 
             var response = new EmbedBuilder()
                 .WithTitle($"Server information for {Context.Guild.Name}")
-                .WithThumbnailUrl(Context.Guild.IconUrl)
+                .WithThumbnailUrl(new Uri(Context.Guild.IconUrl))
                 .AddField(x =>
                 {
                     x.IsInline = true;

@@ -13,7 +13,7 @@ using System;
 
 namespace Kratos.Modules
 {
-    [Name("Core Module"), Group("core")]
+    [Name("Core Module")]
     [Summary("The bot's core commands.")]
     public class CoreModule : ModuleBase
     {

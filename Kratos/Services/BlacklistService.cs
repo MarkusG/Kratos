@@ -90,7 +90,7 @@ namespace Kratos.Services
             await m.DeleteAsync();
             await author.AddRoleAsync(muteRole);
 
-            var dmChannel = await author.CreateDMChannelAsync();
+            var dmChannel = await author.GetOrCreateDMChannelAsync();
             Mute mute = null;
             if (violation.Blacklist == null)
             {

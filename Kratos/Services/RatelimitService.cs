@@ -111,7 +111,7 @@ namespace Kratos.Services
                 var muteRole = author.Guild.GetRole(_config.MuteRoleId);
                 await author.AddRoleAsync(muteRole);
 
-                var dmChannel = await author.CreateDMChannelAsync();
+                var dmChannel = await author.GetOrCreateDMChannelAsync();
                 await dmChannel.SendMessageAsync($"You've been muted for {MuteTime.Humanize(5)} for ratelimiting: `{m.Content}`");
                 var name = author.Nickname == null
                     ? author.Username
