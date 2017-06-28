@@ -13,5 +13,7 @@ namespace Kratos.Data
         public ulong ModLogId { get; set; }
 
         public ulong ServerLogId { get; set; }
+
+        public ulong MuteRoleId { get; set; }
     }
 }

@@ -2,7 +2,7 @@
 using System.Linq;
 using System.IO;
 using System.Threading.Tasks;
-using System.Collections.Generic;
+using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Discord;
 using Discord.WebSocket;
@@ -19,8 +19,27 @@ namespace Kratos
         static void Main(string[] args) =>
             new Program().MainAsync(args).GetAwaiter().GetResult();
 
-        public static string GetConfigurationPath(string name) => Path.Combine(Directory.GetCurrentDirectory(), "config", name);
-        public static string GetLogPath(string name) => Path.Combine(Directory.GetCurrentDirectory(), "log", name);
+        public static string GetOriginalDirectory()
+        {
+            var assembly = Assembly.GetEntryAssembly();
+            var location = assembly.Location;
+            var assemblyName = assembly.GetName().Name + ".dll";
+            return location.Replace(assemblyName, "");
+        }
+        public static string GetConfigurationPath(string name)
+        {
+            var assembly = Assembly.GetEntryAssembly();
+            var location = assembly.Location;
+            var assemblyName = assembly.GetName().Name + ".dll";
+            return Path.Combine(location.Replace(assemblyName, ""), "config", name);
+        }
+        public static string GetLogPath(string name)
+        {
+            var assembly = Assembly.GetEntryAssembly();
+            var location = assembly.Location;
+            var assemblyName = assembly.GetName().Name + ".dll";
+            return Path.Combine(location.Replace(assemblyName, ""), "log", name);
+        }
 
         private IServiceProvider _services;
         private DiscordSocketClient _client;
@@ -68,9 +87,17 @@ namespace Kratos
             }
 
             _client = _services.GetService<DiscordSocketClient>();
-            var localLog = _services.GetService<LocalLogService>();
 
+            var localLog = _services.GetService<LocalLogService>();
             _client.Log += localLog.LogAsync;
+
+            var permissionsService = _services.GetService<PermissionsService>();
+            await permissionsService.LoadPermissionsAsync(Assembly.GetEntryAssembly());
+            if (permissionsService.MasterId == 0)
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine($"No master ID found. Auth code: {permissionsService.GenerateAuthCode()}");
+            }
 
             _client.Ready += HandleOfflineGuildChangesAsync;
             _client.LeftGuild += HandleOnlineGuildChangeAsync;
@@ -97,7 +124,8 @@ namespace Kratos
                 .AddSingleton(new CommandService(new CommandServiceConfig
                 {
                     LogLevel = LogSeverity.Debug
-                }));
+                }))
+                .AddSingleton<PermissionsService>();
 
             return collection.BuildServiceProvider();
         }

@@ -9,6 +9,7 @@ namespace Kratos.Services
     {
         public async Task LogAsync(LogMessage m)
         {
+            Console.ForegroundColor = ConsoleColor.Gray;
             Console.Write(DateTime.UtcNow.ToString("hh:mm:ss"));
             switch (m.Severity)
             {
@@ -40,7 +41,7 @@ namespace Kratos.Services
                 }
 
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"^ {nameof(m.Exception)} occurred. See {path} for details.");
+                Console.WriteLine($"^ {m.Exception.GetType().Name} occurred. See {path} for details.");
                 Console.ForegroundColor = ConsoleColor.Gray;
             }
         }

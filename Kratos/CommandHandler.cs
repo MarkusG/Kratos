@@ -47,6 +47,12 @@ namespace Kratos
             var context = new SocketCommandContext(_client, message);
 
             var result = await _commands.ExecuteAsync(context, argPos, _services);
+
+            if (!result.IsSuccess)
+            {
+                if (result.Error.Value != CommandError.UnknownCommand)
+                    await m.Channel.SendMessageAsync($":x: {result.ErrorReason}");
+            }
         }
 
         public CommandHandler(IServiceProvider services)
