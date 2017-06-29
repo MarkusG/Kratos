@@ -62,7 +62,7 @@ namespace Kratos.Modules
                 Reason = reason
             });
             _records.DisposeContext();
-            await _log.LogModMessageAsync($"{author.Nickname ?? author.Username} permabanned {name} for `{reason}`");
+            await _log.LogModMessageAsync($"{author.Nickname ?? author.Username} permabanned {name} ({user.Id}) for `{reason}`");
             await ReplyAsync(":ok:");
         }
 
@@ -180,7 +180,7 @@ namespace Kratos.Modules
             });
             _records.DisposeContext();
             _unpunish.Bans.Add(ban);
-            await _log.LogModMessageAsync($"{author.Nickname ?? author.Username} temp banned {user.Username} for {time.Humanize(5)} for `{reason}`");
+            await _log.LogModMessageAsync($"{author.Nickname ?? author.Username} temp banned {user.Username} ({user.Id}) for {time.Humanize(5)} for `{reason}`");
             await ReplyAsync(":ok:");
         }
 
@@ -223,7 +223,7 @@ namespace Kratos.Modules
                 Reason = reason
             });
             _records.DisposeContext();
-            await _log.LogModMessageAsync($"{author.Nickname ?? author.Username} softbanned {name} for `{reason}`");
+            await _log.LogModMessageAsync($"{author.Nickname ?? author.Username} softbanned {name} ({user.Id}) for `{reason}`");
             await ReplyAsync(":ok:");
         }
         #endregion
