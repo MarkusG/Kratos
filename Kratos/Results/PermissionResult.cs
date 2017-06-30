@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Discord.Commands;
 
-namespace Kratos.Services.Results
+namespace Kratos.Results
 {
-    public struct PermissionResult
+    public class PermissionResult
     {
         public ResultType Type { get; set; }
 

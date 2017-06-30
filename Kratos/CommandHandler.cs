@@ -8,6 +8,7 @@ using Discord.WebSocket;
 using Discord.Commands;
 using Kratos.Services;
 using Kratos.Configuration;
+using Kratos.Results;
 
 namespace Kratos
 {
@@ -51,7 +52,7 @@ namespace Kratos
             if (!result.IsSuccess)
             {
                 if (result.Error.Value != CommandError.UnknownCommand)
-                    await m.Channel.SendMessageAsync($":x: {result.ErrorReason}");
+                await message.Channel.SendMessageAsync(result.ToString());
             }
         }
 

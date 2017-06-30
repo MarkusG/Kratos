@@ -6,6 +6,7 @@ using Discord.WebSocket;
 using Discord.Commands;
 using Kratos.Preconditions;
 using Kratos.Services;
+using Kratos.Results;
 
 namespace Kratos.Modules
 {
@@ -45,11 +46,26 @@ namespace Kratos.Modules
         [Command("remove"), Alias("-")]
         [Summary("Removes a permission or set of permissions from a role.")]
         [Permission("permissions.manage")]
-        public async Task RemoveAsyc([Summary("Target role")] SocketRole role,
-                                     [Summary("Self explanatory")] string permission)
+        public async Task RemoveAsync([Summary("Target role")] SocketRole role,
+                                      [Summary("Self explanatory")] string permission)
         {
             var result = await _service.RemovePermissionAsync(role.Id, permission);
             await ReplyAsync(result.ToString());
+        }
+
+        [Command("list")]
+        [Summary("List permisisons for a given role")]
+        [Permission("permissions.view")]
+        public async Task<RuntimeResult> ListAsync([Summary("Target role")] SocketRole role)
+        {
+            var permissions = await _service.GetPermissionsAsync(role.Id);
+            if (permissions == null)
+                return new SimpleRuntimeResult(CommandError.Unsuccessful, "No permissions found for role.");
+            var response = new StringBuilder($"**Permissions for {role.Name}:**\n");
+            foreach (var p in permissions)
+                response.AppendLine(p);
+            await ReplyAsync(response.ToString());
+            return new SimpleRuntimeResult(null, "Executed succesfully and listed permissions.");
         }
 
         public PermissionsModule(PermissionsService p)

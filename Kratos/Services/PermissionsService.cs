@@ -7,7 +7,7 @@ using System.Reflection;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Kratos.Preconditions;
-using Kratos.Services.Results;
+using Kratos.Results;
 using Kratos.EntityFramework;
 
 namespace Kratos.Services
@@ -194,6 +194,18 @@ namespace Kratos.Services
                 await context.SaveChangesAsync();
             }
             return PermissionResult.FromSuccess();
+        }
+
+        public async Task<IEnumerable<string>> GetPermissionsAsync(ulong id)
+        {
+            using (var context = new KratosContext())
+            {
+                await context.Database.EnsureCreatedAsync();
+                var pair = await context.Permissions.FirstOrDefaultAsync(p => p.Id == id);
+                if (pair == null)
+                    return null;
+                return pair.Permissions.Split(new string[] { ", " }, StringSplitOptions.None);
+            }
         }
 
         public async Task<bool> CheckPermissionsAsync(ulong id, string permission)
