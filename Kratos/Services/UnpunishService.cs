@@ -45,7 +45,7 @@ namespace Kratos.Services
                     var name = user.Nickname == null
                         ? user.Username
                         : $"{user.Username} (nickname: {user.Nickname})";
-                    await _log.LogModMessageAsync($":alarm_clock: {name}#{user.Id} ({m.SubjectId})'s mute from {m.Timestamp} has expired.");
+                    await _log.LogModMessageAsync($":alarm_clock: {name}#{user.Discriminator} ({m.SubjectId})'s mute from {m.Timestamp} has expired.");
                     await _records.DeactivateMuteAsync(m.Key);
                     mutesToRemove.Add(m);
                 }
