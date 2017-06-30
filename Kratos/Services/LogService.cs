@@ -208,6 +208,7 @@ namespace Kratos.Services
 
             var before = await b.GetOrDownloadAsync();
             if (before == null) return;
+            if (before.Content == a.Content) return;
             var author = a.Author as SocketGuildUser;
             if (author == null) return;
             await LogServerMessageAsync($"{author.Nickname ?? author.Username}#{author.Discriminator} ({author.Id}) edited their message in {(a.Channel as SocketTextChannel).Mention}:\n" +
