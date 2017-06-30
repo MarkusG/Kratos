@@ -11,8 +11,8 @@ namespace Kratos.Results
 
         public string Reason { get; set; }
 
-        public static PermissionResult FromSuccess() =>
-            new PermissionResult { Type = ResultType.Success };
+        public static PermissionResult FromSuccess(string reason) =>
+            new PermissionResult { Type = ResultType.Success, Reason = reason };
 
         public static PermissionResult FromWarning(string reason) =>
             new PermissionResult { Type = ResultType.Warning, Reason = reason };

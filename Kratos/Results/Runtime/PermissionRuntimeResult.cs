@@ -17,9 +17,8 @@ namespace Kratos.Results
                 return new PermissionRuntimeResult(null, inner.Reason, inner);
         }
 
-        public PermissionRuntimeResult(CommandError? error, string reason, PermissionResult inner) : base(error, reason) { }
-
-        public PermissionRuntimeResult() : base(null, null) { }
+        public PermissionRuntimeResult(CommandError? error, string reason, PermissionResult inner) : base(error, reason) =>
+            InnerResult = inner;
 
         public override string ToString()
             => InnerResult.ToString();

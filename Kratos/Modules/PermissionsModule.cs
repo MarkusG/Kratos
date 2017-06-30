@@ -18,39 +18,37 @@ namespace Kratos.Modules
 
         [Command("auth")]
         [Summary("Authenticates you as the master of the bot.")]
-        public async Task AuthAsync([Summary("The auth code written to the console when the bot launched")] ushort code)
+        public async Task<RuntimeResult> AuthAsync([Summary("The auth code written to the console when the bot launched")] ushort code)
         {
             if (_service.AuthCode == 0)
-            {
-                await ReplyAsync(":x: Already authed.");
-                return;
-            }
+                return new SimpleRuntimeResult(CommandError.Unsuccessful, "Already authed.");
 
             if (code == _service.AuthCode)
             {
                 await _service.AuthAsync(Context.User.Id);
-                await ReplyAsync(":ok:");
+                return new SimpleRuntimeResult(null, "Successfully authed.");
             }
+            return new SimpleRuntimeResult(CommandError.Unsuccessful, "Invalid auth code.");
         }
 
         [Command("add"), Alias("+")]
         [Summary("Adds a permission or set of permissions to a role.")]
         [Permission("permissions.manage")]
-        public async Task AddAsync([Summary("Target role")] SocketRole role,
-                                   [Summary("Self explanatory")] string permission)
+        public async Task<RuntimeResult> AddAsync([Summary("Target role")] SocketRole role,
+                                                            [Summary("Self explanatory")] string permission)
         {
             var result = await _service.AddPermissionAsync(role.Id, permission);
-            await ReplyAsync(result.ToString());
+            return PermissionRuntimeResult.FromInnerResult(result);
         }
 
         [Command("remove"), Alias("-")]
         [Summary("Removes a permission or set of permissions from a role.")]
         [Permission("permissions.manage")]
-        public async Task RemoveAsync([Summary("Target role")] SocketRole role,
-                                      [Summary("Self explanatory")] string permission)
+        public async Task<RuntimeResult> RemoveAsync([Summary("Target role")] SocketRole role,
+                                                               [Summary("Self explanatory")] string permission)
         {
             var result = await _service.RemovePermissionAsync(role.Id, permission);
-            await ReplyAsync(result.ToString());
+            return PermissionRuntimeResult.FromInnerResult(result);
         }
 
         [Command("list")]
@@ -65,7 +63,7 @@ namespace Kratos.Modules
             foreach (var p in permissions)
                 response.AppendLine(p);
             await ReplyAsync(response.ToString());
-            return new SimpleRuntimeResult(null, "Executed succesfully and listed permissions.");
+            return new SimpleRuntimeResult(null, null);
         }
 
         public PermissionsModule(PermissionsService p)

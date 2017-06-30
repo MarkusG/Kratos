@@ -30,6 +30,7 @@ namespace Kratos.Services
 
             using (var context = new KratosContext())
             {
+                PermissionResult result;
                 await context.Database.EnsureCreatedAsync();
                 var pair = await context.Permissions.FirstOrDefaultAsync(p => p.Id == id);
                 if (pair != null)
@@ -39,6 +40,7 @@ namespace Kratos.Services
                         return PermissionResult.FromWarning("Permission already held.");
                     permissions.Add(permission);
                     pair.Permissions = string.Join(", ", permissions);
+                    result = PermissionResult.FromSuccess("Permission added.");
                 }
                 else
                 {
@@ -47,9 +49,10 @@ namespace Kratos.Services
                         Id = id,
                         Permissions = permission
                     });
+                    result = PermissionResult.FromSuccess("Set created and permission added.");
                 }
                 await context.SaveChangesAsync();
-                return PermissionResult.FromSuccess();
+                return result;
             }
         }
 
@@ -88,6 +91,7 @@ namespace Kratos.Services
 
             using (var context = new KratosContext())
             {
+                PermissionResult result;
                 await context.Database.EnsureCreatedAsync();
                 var pair = await context.Permissions.FirstOrDefaultAsync(p => p.Id == id);
                 if (pair != null)
@@ -97,6 +101,7 @@ namespace Kratos.Services
                     foreach (var p in addendPermissions)
                         hashPermissions.Add(p);
                     pair.Permissions = string.Join(", ", hashPermissions);
+                    result = PermissionResult.FromSuccess("Permissions added.");
                 }
                 else
                 {
@@ -105,11 +110,11 @@ namespace Kratos.Services
                         Id = id,
                         Permissions = string.Join(", ", addendPermissions)
                     });
+                    result = PermissionResult.FromSuccess("Set created and permissions added.");
                 }
                 await context.SaveChangesAsync();
+                return result;
             }
-
-            return PermissionResult.FromSuccess();
         }
 
         public async Task<PermissionResult> RemovePermissionAsync(ulong id, string permission)
@@ -122,6 +127,7 @@ namespace Kratos.Services
 
             using (var context = new KratosContext())
             {
+                PermissionResult result;
                 await context.Database.EnsureCreatedAsync();
 
                 var pair = await context.Permissions.FirstOrDefaultAsync(p => p.Id == id);
@@ -135,17 +141,22 @@ namespace Kratos.Services
                 pair.Permissions = string.Join(", ", permissions);
 
                 if (string.IsNullOrWhiteSpace(pair.Permissions))
+                {
                     context.Permissions.Remove(pair);
-
+                    result = PermissionResult.FromSuccess("Permission and set removed.");
+                }
+                else
+                    result = PermissionResult.FromSuccess("Permission removed.");
                 await context.SaveChangesAsync();
+                return result;
             }
-            return PermissionResult.FromSuccess();
         }
 
         public async Task<PermissionResult> RemoveWildcardPermissionAsync(ulong id, string permission)
         {
             using (var context = new KratosContext())
             {
+                PermissionResult result;
                 await context.Database.EnsureCreatedAsync();
                 var pair = await context.Permissions.FirstOrDefaultAsync(p => p.Id == id);
                 if (pair == null)
@@ -189,11 +200,15 @@ namespace Kratos.Services
                 pair.Permissions = string.Join(", ", heldPermissions);
 
                 if (string.IsNullOrWhiteSpace(pair.Permissions))
+                {
                     context.Permissions.Remove(pair);
-
+                    result = PermissionResult.FromSuccess("Permissions and set removed.");
+                }
+                else
+                    result = PermissionResult.FromSuccess("Permissions removed.");
                 await context.SaveChangesAsync();
+                return result;
             }
-            return PermissionResult.FromSuccess();
         }
 
         public async Task<IEnumerable<string>> GetPermissionsAsync(ulong id)

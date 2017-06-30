@@ -49,10 +49,15 @@ namespace Kratos
 
             var result = await _commands.ExecuteAsync(context, argPos, _services);
 
-            if (!result.IsSuccess)
+            if (result is RuntimeResult runtimeResult)
             {
-                if (result.Error.Value != CommandError.UnknownCommand)
-                await message.Channel.SendMessageAsync(result.ToString());
+                if (runtimeResult.Reason != null)
+                    await message.Channel.SendMessageAsync(runtimeResult.ToString());
+            }
+            else if (!result.IsSuccess)
+            {
+                if (result.Error.GetValueOrDefault() == CommandError.UnknownCommand) return;
+                await message.Channel.SendMessageAsync($":x: {result.ErrorReason}");
             }
         }
 
