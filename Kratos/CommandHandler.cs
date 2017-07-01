@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Reflection;
 using Discord;
@@ -66,7 +67,15 @@ namespace Kratos
                 if (result.IsSuccess)
                 {
                     var author = message.Author as SocketGuildUser;
-                    await _log.LogModMessageAsync($"{author.Nickname ?? author.Username} ({author.Id}) executed a command:\n```{m.Content}```");
+                    var logMessage = m.Content;
+                    foreach (var u in m.MentionedUsers.Cast<SocketGuildUser>())
+                    {
+                        logMessage = logMessage.Replace(u.Mention, $"@{u.Username}#{u.Discriminator}");
+                        var usernameMention = u.Mention.Remove(2, 1);
+                        logMessage = logMessage.Replace(usernameMention, $"@{u.Username}#{u.Discriminator}");
+                    }
+
+                    await _log.LogModMessageAsync($"{author.Nickname ?? author.Username} ({author.Id}) executed a command:\n```{logMessage}```");
                 }
             }
         }

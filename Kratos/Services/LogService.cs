@@ -144,7 +144,7 @@ namespace Kratos.Services
         {
             if (ModLogChannelId == 0) return;
             var channel = _client.GetChannel(ModLogChannelId) as SocketTextChannel;
-            await channel.SendMessageAsync(message.Replace("@", "(at)"));
+            await channel.SendMessageAsync(message);
         }
 
         public async Task<bool> SaveConfigurationAsync()
