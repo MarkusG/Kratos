@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Kratos.Data
+﻿namespace Kratos.Data
 {
     public class GuildSettings
     {

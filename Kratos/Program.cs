@@ -10,7 +10,6 @@ using Discord.Commands;
 using CommandLine;
 using Kratos.Configuration;
 using Kratos.Services;
-using Kratos.Data;
 
 namespace Kratos
 {

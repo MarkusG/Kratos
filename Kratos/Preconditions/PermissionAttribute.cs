@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
-using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Discord.WebSocket;
 using Discord.Commands;

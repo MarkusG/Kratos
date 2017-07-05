@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Kratos.Results
+﻿namespace Kratos.Results
 {
     public enum ResultType
     {

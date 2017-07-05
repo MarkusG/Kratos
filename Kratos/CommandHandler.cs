@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Text;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -8,7 +7,6 @@ using Discord.WebSocket;
 using Discord.Commands;
 using Kratos.Services;
 using Kratos.Configuration;
-using Kratos.Results;
 
 namespace Kratos
 {

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Discord.WebSocket;
@@ -61,6 +60,18 @@ namespace Kratos.Modules
                 return new SimpleRuntimeResult(CommandError.Unsuccessful, "No permissions found for role.");
             var response = new StringBuilder($"**Permissions for {role.Name}:**\n");
             foreach (var p in permissions)
+                response.AppendLine(p);
+            await ReplyAsync(response.ToString());
+            return new SimpleRuntimeResult(null, null);
+        }
+
+        [Command("listall")]
+        [Summary("List all existing permissions")]
+        [Permission("permissions.view")]
+        public async Task<RuntimeResult> ListAllAsync()
+        {
+            var response = new StringBuilder("**All permissions:**\n");
+            foreach (var p in _service.AllPermissions.OrderBy(x => x))
                 response.AppendLine(p);
             await ReplyAsync(response.ToString());
             return new SimpleRuntimeResult(null, null);

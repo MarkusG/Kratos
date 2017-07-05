@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Discord.Commands;
-
-namespace Kratos.Results
+﻿namespace Kratos.Results
 {
     public class PermissionResult
     {
