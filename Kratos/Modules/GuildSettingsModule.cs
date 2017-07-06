@@ -38,7 +38,7 @@ namespace Kratos.Modules
 
             await _guildsConfig.SaveAsync();
 
-            await ReplyAsync(":ok:");
+            await ReplyAsync("🆗");
         }
 
         [Command("prefix")]
@@ -49,7 +49,7 @@ namespace Kratos.Modules
             var guild = _guildsConfig.GetOrCreate(Context.Guild.Id);
             guild.Prefix = prefix;
             await _guildsConfig.SaveAsync();
-            await ReplyAsync($":ok: Prefix for this guild changed to {prefix}");
+            await ReplyAsync($"🆗 Prefix for this guild changed to {prefix}");
         }
 
         [Command("modlog")]
@@ -60,7 +60,7 @@ namespace Kratos.Modules
             var guild = _guildsConfig.GetOrCreate(Context.Guild.Id);
             guild.ModLogId = channel.Id;
             await _guildsConfig.SaveAsync();
-            await ReplyAsync($":ok: Mod log changed to {channel.Mention}");
+            await ReplyAsync($"🆗 Mod log changed to {channel.Mention}");
         }
 
         [Command("serverlog")]
@@ -71,7 +71,7 @@ namespace Kratos.Modules
             var guild = _guildsConfig.GetOrCreate(Context.Guild.Id);
             guild.ServerLogId = channel.Id;
             await _guildsConfig.SaveAsync();
-            await ReplyAsync($":ok: Server log changed to {channel.Mention}");
+            await ReplyAsync($"🆗 Server log changed to {channel.Mention}");
         }
 
         [Command("muterole")]
@@ -82,7 +82,7 @@ namespace Kratos.Modules
             var guild = _guildsConfig.GetOrCreate(Context.Guild.Id);
             guild.MuteRoleId = role.Id;
             await _guildsConfig.SaveAsync();
-            await ReplyAsync($":ok: Mute role changed to {role.Name}");
+            await ReplyAsync($"🆗 Mute role changed to {role.Name}");
         }
 
         public GuildSettingsModule(GuildConfiguration guilds)

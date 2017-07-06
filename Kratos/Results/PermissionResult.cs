@@ -19,9 +19,9 @@
         {
             switch (Type)
             {
-                case ResultType.Success: return $":ok: {Reason}";
-                case ResultType.Warning: return $":warning: {Reason}";
-                case ResultType.Failure: return $":x: {Reason}";
+                case ResultType.Success: return $"🆗 {Reason}";
+                case ResultType.Warning: return $"⚠ {Reason}";
+                case ResultType.Failure: return $"❌ {Reason}";
                 default: return null;
             }
         }

@@ -14,7 +14,7 @@ namespace Kratos.Preconditions
             return Task.FromResult(
                 context.User.Id == service.MasterId
                 ? PreconditionResult.FromSuccess()
-                : PreconditionResult.FromError(":x: This command can only be run by the bot's master."));
+                : PreconditionResult.FromError("❌ This command can only be run by the bot's master."));
         }
     }
 }

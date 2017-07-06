@@ -55,7 +55,7 @@ namespace Kratos
             else if (!result.IsSuccess)
             {
                 if (result.Error.GetValueOrDefault() == CommandError.UnknownCommand) return;
-                await message.Channel.SendMessageAsync($":x: {result.ErrorReason}");
+                await message.Channel.SendMessageAsync($"❌ {result.ErrorReason}");
             }
         }
 

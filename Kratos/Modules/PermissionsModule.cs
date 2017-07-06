@@ -68,13 +68,12 @@ namespace Kratos.Modules
         [Command("listall")]
         [Summary("List all existing permissions")]
         [Permission("permissions.view")]
-        public async Task<RuntimeResult> ListAllAsync()
+        public async Task ListAllAsync()
         {
             var response = new StringBuilder("**All permissions:**\n");
             foreach (var p in _service.AllPermissions.OrderBy(x => x))
                 response.AppendLine(p);
             await ReplyAsync(response.ToString());
-            return new SimpleRuntimeResult(null, null);
         }
 
         public PermissionsModule(PermissionsService p)

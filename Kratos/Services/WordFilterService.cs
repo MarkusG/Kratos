@@ -1,4 +1,7 @@
-﻿using Kratos.Configuration;
+﻿using System.Linq;
+using Discord;
+using Kratos.Configuration;
+using Kratos.Data;
 
 namespace Kratos.Services
 {
