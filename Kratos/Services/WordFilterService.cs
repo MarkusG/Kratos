@@ -7,6 +7,6 @@ namespace Kratos.Services
 {
     public class WordFilterService
     {
-        public WordFilterConfiguration Config { get; set; }
+        public WordFilterConfiguration Config { get; set; } = new WordFilterConfiguration();
     }
 }

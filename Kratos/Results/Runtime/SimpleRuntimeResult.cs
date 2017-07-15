@@ -16,7 +16,8 @@ namespace Kratos.Results
         public static SimpleRuntimeResult FromFailure(string reason) =>
             new SimpleRuntimeResult(CommandError.Unsuccessful, reason, ResultType.Failure);
 
-        private SimpleRuntimeResult(CommandError? error, string reason, ResultType type) : base(error, reason) { }
+        private SimpleRuntimeResult(CommandError? error, string reason, ResultType type) : base(error, reason) =>
+            Type = type;
 
         public SimpleRuntimeResult(CommandError? error, string reason) : base(error, reason) { }
 

@@ -25,6 +25,6 @@ namespace Kratos.Configuration
             }
         }
 
-        public WordFilterConfiguration() : base("blacklist.json") { }
+        public WordFilterConfiguration() : base("filter.json") { }
     }
 }

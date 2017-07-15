@@ -70,6 +70,7 @@ namespace Kratos
             await botConfig.LoadAsync();
             _guildsConfig = _services.GetService<GuildConfiguration>();
             await _guildsConfig.LoadAsync();
+            await _services.GetService<WordFilterService>().Config.LoadAsync();
 
             if (botConfig.Token == null && options.Token == null)
             {
@@ -124,7 +125,8 @@ namespace Kratos
                 {
                     LogLevel = LogSeverity.Debug
                 }))
-                .AddSingleton<PermissionsService>();
+                .AddSingleton<PermissionsService>()
+                .AddSingleton<WordFilterService>();
 
             return collection.BuildServiceProvider();
         }
