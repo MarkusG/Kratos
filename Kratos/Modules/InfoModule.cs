@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Text;
 using System.Linq;
@@ -218,12 +219,16 @@ namespace Kratos.Modules
         [Summary("Returns general information about the bot")]
         public async Task Info()
         {
-            DateTime startTime = Process.GetCurrentProcess().StartTime;
-            TimeSpan uptime = DateTime.Now.Subtract(startTime);
-            StringBuilder response = new StringBuilder("```");
-            response.AppendLine($"Uptime: {uptime.Humanize(5)}");
-
-            await ReplyAsync(response.ToString() + "```");
+            var startTime = Process.GetCurrentProcess().StartTime;
+            var uptime = DateTime.Now.Subtract(startTime).Humanize(5);
+            var runtime = RuntimeInformation.FrameworkDescription;
+            var libraryVersion = DiscordConfig.Version;
+            StringBuilder response = new StringBuilder("**Bot Information:**\n")
+                .AppendLine($"Runtime: {runtime}")
+                .AppendLine($"Library: Discord.Net version {libraryVersion}")
+                .AppendLine($"Uptime: {uptime}");
+                
+            await ReplyAsync(response.ToString());
         }
 
         [Command("roles")]
