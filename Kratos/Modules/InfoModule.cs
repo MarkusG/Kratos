@@ -226,7 +226,9 @@ namespace Kratos.Modules
             StringBuilder response = new StringBuilder("**Bot Information:**\n")
                 .AppendLine($"Runtime: {runtime}")
                 .AppendLine($"Library: Discord.Net version {libraryVersion}")
-                .AppendLine($"Uptime: {uptime}");
+                .AppendLine($"Uptime: {uptime}")
+                .AppendLine("-")
+                .AppendLine($"Guilds: {string.Join(", ", _client.Guilds)}");
                 
             await ReplyAsync(response.ToString());
         }
