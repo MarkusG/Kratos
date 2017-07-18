@@ -116,7 +116,7 @@ namespace Kratos.Services
                 var name = author.Nickname == null
                     ? author.Username
                     : $"{author.Username} (nickname: {author.Nickname})";
-                await _log.LogModMessageAsync($"I automatically muted {name} ({author.Id}) for {MuteTime.Humanize(5)} ratelimiting in {(m.Channel as SocketTextChannel).Mention}: `{m.Content}`");
+                await _log.LogModMessageAsync($"I automatically muted **{name} ({author.Id})** for {MuteTime.Humanize(5)} ratelimiting in {(m.Channel as SocketTextChannel).Mention}: `{m.Content}`");
                 var mute = await _records.AddMuteAsync(new Mute
                 {
                     GuildId = author.Guild.Id,

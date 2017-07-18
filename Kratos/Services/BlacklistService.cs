@@ -98,7 +98,7 @@ namespace Kratos.Services
                 var name = author.Nickname == null
                     ? author.Username
                     : $"{author.Username} (nickname: {author.Nickname})";
-                await _log.LogModMessageAsync($"I automatically muted {name} ({author.Id}) for {GlobalBlacklist.MuteTime.Humanize(5)} for violating the word blacklist in {(m.Channel as SocketTextChannel).Mention}: `{m.Content}`");
+                await _log.LogModMessageAsync($"I automatically muted **{name} ({author.Id})** for {GlobalBlacklist.MuteTime.Humanize(5)} for violating the word blacklist in {(m.Channel as SocketTextChannel).Mention}: `{m.Content}`");
                 mute = await _records.AddMuteAsync(new Mute
                 {
                     GuildId = guild.Id,
@@ -116,7 +116,7 @@ namespace Kratos.Services
                 var name = author.Nickname == null
                     ? author.Username
                     : $"{author.Username} (nickname: {author.Nickname})";
-                await _log.LogModMessageAsync($"I automatically muted {name} ({author.Id}) for {violation.Blacklist.MuteTime.Humanize(5)} for violating the word blacklist in {(m.Channel as SocketTextChannel).Mention}: `{m.Content}`");
+                await _log.LogModMessageAsync($"I automatically muted **{name} ({author.Id})** for {violation.Blacklist.MuteTime.Humanize(5)} for violating the word blacklist in {(m.Channel as SocketTextChannel).Mention}: `{m.Content}`");
                 mute = await _records.AddMuteAsync(new Mute
                 {
                     GuildId = guild.Id,

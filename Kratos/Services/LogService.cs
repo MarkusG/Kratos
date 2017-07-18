@@ -211,9 +211,9 @@ namespace Kratos.Services
             if (before.Content == a.Content) return;
             var author = a.Author as SocketGuildUser;
             if (author == null) return;
-            await LogServerMessageAsync($"{author.Nickname ?? author.Username}#{author.Discriminator} ({author.Id}) edited their message in {(a.Channel as SocketTextChannel).Mention}:\n" +
-                                        $"Before: {before.Content}\n" + 
-                                        $"After: {a.Content}");
+            await LogServerMessageAsync($"**{author.Nickname ?? author.Username}#{author.Discriminator} ({author.Id})** edited their message in {(a.Channel as SocketTextChannel).Mention}:\n" +
+                                        $"**Before:** {before.Content}\n" + 
+                                        $"**After:** {a.Content}");
         }
 
         private async Task _client_MessageDeleted(Cacheable<IMessage, ulong> m, ISocketMessageChannel channel)
@@ -222,25 +222,25 @@ namespace Kratos.Services
             if (message == null) return;
             var author = message.Author as SocketGuildUser;
             if (author == null) return;
-            await LogServerMessageAsync($"{author.Nickname ?? author.Username}#{author.Discriminator} ({author.Id})'s message was deleted in {(message.Channel as SocketTextChannel).Mention}:\n" +
+            await LogServerMessageAsync($"**{author.Nickname ?? author.Username}#{author.Discriminator} ({author.Id})**'s message was deleted in {(message.Channel as SocketTextChannel).Mention}:\n" +
                                         $"{message.Content}");
         }
 
         private async Task _client_UserJoined(SocketGuildUser u)
         {
-            await LogServerMessageAsync($":new: {u.Username}#{u.Discriminator} ({u.Id}) joined the server.");
+            await LogServerMessageAsync($":new: **{u.Username}#{u.Discriminator} ({u.Id})** joined the server.");
         }
 
         private async Task _client_UserLeft(SocketGuildUser u)
         {
-            await LogServerMessageAsync($":wave: {u.Username}#{u.Discriminator} ({u.Id}) left the server.");
+            await LogServerMessageAsync($":wave: **{u.Username}#{u.Discriminator} ({u.Id})** left the server.");
         }
 
         private async Task _client_UserUpdated_NameChange(SocketUser b, SocketUser a)
         {
             if (b.Username == a.Username) return;
 
-            await LogServerMessageAsync($"{b.Username}#{b.Discriminator} ({b.Id}) changed their username to {a.Username}");
+            await LogServerMessageAsync($"ℹ **{b.Username}#{b.Discriminator} ({b.Id})** changed their username to {a.Username}");
         }
 
         private async Task _client_GuildMemberUpdated_NickChange(SocketGuildUser b, SocketGuildUser a)
@@ -248,10 +248,10 @@ namespace Kratos.Services
             if (b.Nickname == a.Nickname) return;
             if (a.Nickname == null)
             {
-                await LogServerMessageAsync($"{b.Username}#{b.Discriminator} ({b.Nickname}) ({b.Id}) removed their nickname.");
+                await LogServerMessageAsync($"ℹ **{b.Username}#{b.Discriminator} ({b.Nickname}) ({b.Id})** removed their nickname.");
                 return;
             }
-            await LogServerMessageAsync($"{b.Nickname ?? b.Username}#{b.Discriminator} ({b.Id}) changed their nickname to {a.Nickname}");
+            await LogServerMessageAsync($"ℹ **{b.Nickname ?? b.Username}#{b.Discriminator} ({b.Id})** changed their nickname to {a.Nickname}");
         }
 
         private async Task _client_GuildMemberUpdated_RoleChange(SocketGuildUser b, SocketGuildUser a)
@@ -261,18 +261,18 @@ namespace Kratos.Services
             if (b.Roles.Count() > a.Roles.Count())
             {
                 var role = b.Roles.Except(a.Roles).FirstOrDefault();
-                await LogServerMessageAsync($"{b.Nickname ?? b.Username}#{b.Discriminator} ({b.Id}) has lost role: {role.Name}");
+                await LogServerMessageAsync($"**{b.Nickname ?? b.Username}#{b.Discriminator} ({b.Id})** has lost role: {role.Name}");
             }
             else
             {
                 var role = a.Roles.Except(b.Roles).FirstOrDefault();
-                await LogServerMessageAsync($"{b.Nickname ?? b.Username}#{b.Discriminator} ({b.Id}) has gained role: {role.Name}");
+                await LogServerMessageAsync($"**{b.Nickname ?? b.Username}#{b.Discriminator} ({b.Id})** has gained role: {role.Name}");
             }
         }
 
         private async Task _client_UserBanned(SocketUser u, SocketGuild g)
         {
-            await LogServerMessageAsync($":hammer: {u.Username}#{u.Discriminator} ({u.Id}) was banned from the server.");
+            await LogServerMessageAsync($":hammer: **{u.Username}#{u.Discriminator} ({u.Id})** was banned from the server.");
         }
         #endregion
 

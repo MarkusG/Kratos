@@ -80,7 +80,7 @@ namespace Kratos.Services
                     });
                     _unpunish.Mutes.Add(mute);
                     _records.DisposeContext();
-                    await _log.LogModMessageAsync($"Automatically muted {author.Nickname ?? author.Username}#{author.Discriminator} ({author.Id})'s message in {channel.Mention} for {MuteTime.Humanize(5)} for violating slowmode: `{m.Content}`");
+                    await _log.LogModMessageAsync($"Automatically muted **{author.Nickname ?? author.Username}#{author.Discriminator} ({author.Id})**'s message in {channel.Mention} for {MuteTime.Humanize(5)} for violating slowmode: `{m.Content}`");
                 }
             }
         }

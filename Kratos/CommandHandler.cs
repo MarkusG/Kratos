@@ -75,7 +75,7 @@ namespace Kratos
                         logMessage = logMessage.Replace(usernameMention, $"@{u.Username}#{u.Discriminator}");
                     }
 
-                    await _log.LogModMessageAsync($"{author.Nickname ?? author.Username} ({author.Id}) executed a command:\n```{logMessage}```");
+                    await _log.LogModMessageAsync($"**{author.Nickname ?? author.Username} ({author.Id})** executed a command:\n```{logMessage}```");
                 }
             }
         }
