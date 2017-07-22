@@ -1,9 +1,8 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Text;
-using System.Text.RegularExpressions;
-using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
 using Discord;
 using Discord.WebSocket;
 using Humanizer;
@@ -12,7 +11,6 @@ using Kratos.Services;
 using Kratos.Data;
 using Kratos.Results;
 using Kratos.Extensions;
-using Kratos.EntityFramework;
 
 namespace Kratos.Services
 {
@@ -20,6 +18,7 @@ namespace Kratos.Services
     {
         private DiscordSocketClient _client;
         private PermissionsService _permissions;
+        private GuildConfiguration _guilds;
 
         public WordFilterConfiguration Config { get; set; } = new WordFilterConfiguration();
 
@@ -37,6 +36,10 @@ namespace Kratos.Services
                 if (await _permissions.CheckPermissionsAsync(r.Id, "automod.bypass")) return;
 
             await m.DeleteAsync();
+            var config = _guilds.GetOrCreate(author.Guild.Id);
+            var muteRole = author.Guild.GetRole(config.MuteRoleId);
+            await author.AddRoleAsync(muteRole);
+            var timer = new Timer(Unmute, author, result.Filter.MuteTime, TimeSpan.FromMilliseconds(-1));
 
             var privateMessage = new StringBuilder()
                 .AppendLine($"You've been muted for {result.Filter.MuteTime.Humanize(5)} for violating the word filter in {author.Guild.Name}:")
@@ -49,7 +52,18 @@ namespace Kratos.Services
                 .AppendLine($"Pattern: `{result.Pattern.ToString()}`");
             var matchValues = result.Matches.ToEnumerable().Select(match => $"`{match.Value}`");
             logMessage.AppendLine($"Matches: {string.Join(", ", matchValues)}");
-            await m.Channel.SendMessageAsync(logMessage.ToString());
+            var logChannel = _client.GetChannel(config.ModLogId) as SocketTextChannel;
+            await logChannel.SendMessageAsync(logMessage.ToString());
+        }
+
+        private void Unmute(object o)
+        {
+            var user = o as SocketGuildUser;
+            var config = _guilds.GetOrCreate(user.Guild.Id);
+            var muteRole = user.Guild.GetRole(config.MuteRoleId);
+            user.RemoveRoleAsync(muteRole);
+            var logChannel = _client.GetChannel(config.ModLogId) as SocketTextChannel;
+            logChannel.SendMessageAsync($"⏰ **{user.GetFullName()}'s** mute has expired.");
         }
 
         private WordFilterViolationResult CheckViolation(SocketMessage message)
@@ -83,11 +97,12 @@ namespace Kratos.Services
             return WordFilterViolationResult.FromNegative();
         }
 
-        public WordFilterService(DiscordSocketClient client, PermissionsService permissions)
+        public WordFilterService(DiscordSocketClient client, PermissionsService permissions, GuildConfiguration guilds)
         {
             _client = client;
             _client.MessageReceived += CheckFilterViolationAsync;
             _permissions = permissions;
+            _guilds = guilds;
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -83,7 +84,7 @@ namespace Kratos.Modules
         [Command("clear")]
         [Summary("Clears the filter")]
         [Permission("filter.manage")]
-        public async Task<RuntimeResult> ClearAsync([Summary("Channel (leave blank to view the guild's blacklist)")] SocketTextChannel channel = null)
+        public async Task<RuntimeResult> ClearAsync([Summary("Channel (leave blank to view the guild's filter)")] SocketTextChannel channel = null)
         {
             WordFilter filter;
 
@@ -100,6 +101,28 @@ namespace Kratos.Modules
             await ReplyAsync("🆗");
             return SimpleRuntimeResult.FromSuccess();
         }
+
+        [Command("mutetime")]
+        [Summary("Edit the mute time for the given filter")]
+        [Permission("filter.manage")]
+        public async Task<RuntimeResult> MuteTimeAsync([Summary("Mute time (hh:mm:ss)")] TimeSpan time,
+                                                       [Summary("Channel (leave blank to edit the mute time for the guild's filter")] SocketTextChannel channel = null)
+        {
+            WordFilter filter;
+
+            if (channel == null)
+                filter = _service.Config.Filters.FirstOrDefault(f => f.Id == Context.Guild.Id);
+            else
+                filter = _service.Config.Filters.FirstOrDefault(f => f.Id == channel.Id);
+
+            if (filter == null)
+                return SimpleRuntimeResult.FromWarning("No filter found.");
+
+            filter.MuteTime = time;
+            await _service.Config.SaveAsync();
+            await ReplyAsync("🆗");
+            return SimpleRuntimeResult.FromSuccess();
+        } 
 
         [Command("list")]
         [Summary("Lists all patterns in the word filter")]
