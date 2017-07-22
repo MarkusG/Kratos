@@ -24,7 +24,6 @@ namespace Kratos.Services
 
         private async Task CheckFilterViolationAsync(SocketMessage m)
         {
-            if (m.Author.Id == 72080813948153856) return; // remember to remove this garbage
             if (m.Author.Id == _client.CurrentUser.Id) return;
             var author = m.Author as SocketGuildUser;
             if (author == null) return;

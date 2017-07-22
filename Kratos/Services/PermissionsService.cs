@@ -96,7 +96,7 @@ namespace Kratos.Services
                 if (pair != null)
                 {
                     var permissions = pair.Permissions.Split(new string[] { ", " }, StringSplitOptions.RemoveEmptyEntries);
-                    var hashPermissions = new HashSet<string>(permissions); // Copy to a Hashpair to prevent adding duplicate permissions
+                    var hashPermissions = new HashSet<string>(permissions); // Copy to a Hashset to prevent adding duplicate permissions
                     foreach (var p in addendPermissions)
                         hashPermissions.Add(p);
                     pair.Permissions = string.Join(", ", hashPermissions);
@@ -232,7 +232,7 @@ namespace Kratos.Services
                 var entry = await context.Permissions.FirstOrDefaultAsync(p => p.Id == id);
                 if (entry == null)
                     return false;
-                var permissions = entry.Permissions.Split(new string[] { ", " }, StringSplitOptions.RemoveEmptyEntries); // NOTE: Remember to remove the user's entry if they lose all their permissions!
+                var permissions = entry.Permissions.Split(new string[] { ", " }, StringSplitOptions.RemoveEmptyEntries);
                 return permissions.Contains(permission);
             }
         }
