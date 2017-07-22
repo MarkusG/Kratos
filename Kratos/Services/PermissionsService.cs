@@ -248,6 +248,8 @@ namespace Kratos.Services
                 AllPermissions.Add(attribute.Permission);
             }
 
+            AllPermissions.Add("automod.bypass");
+
             var path = Path.Combine(Program.GetOriginalDirectory(), "auth");
             if (!File.Exists(path)) return;
             using (var stream = new FileStream(path, FileMode.Open))

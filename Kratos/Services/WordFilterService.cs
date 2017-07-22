@@ -3,19 +3,23 @@ using System.Threading.Tasks;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 using Discord;
 using Discord.WebSocket;
 using Humanizer;
 using Kratos.Configuration;
+using Kratos.Services;
 using Kratos.Data;
 using Kratos.Results;
 using Kratos.Extensions;
+using Kratos.EntityFramework;
 
 namespace Kratos.Services
 {
     public class WordFilterService
     {
         private DiscordSocketClient _client;
+        private PermissionsService _permissions;
 
         public WordFilterConfiguration Config { get; set; } = new WordFilterConfiguration();
 
@@ -28,6 +32,9 @@ namespace Kratos.Services
 
             var result = CheckViolation(m);
             if (!result.Positive) return;
+
+            foreach (var r in author.Roles)
+                if (await _permissions.CheckPermissionsAsync(r.Id, "automod.bypass")) return;
 
             await m.DeleteAsync();
 
@@ -76,10 +83,11 @@ namespace Kratos.Services
             return WordFilterViolationResult.FromNegative();
         }
 
-        public WordFilterService(DiscordSocketClient client)
+        public WordFilterService(DiscordSocketClient client, PermissionsService permissions)
         {
             _client = client;
             _client.MessageReceived += CheckFilterViolationAsync;
+            _permissions = permissions;
         }
     }
 }
