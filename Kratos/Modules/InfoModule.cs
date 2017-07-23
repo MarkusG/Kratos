@@ -4,11 +4,13 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Text;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using Discord;
 using Discord.WebSocket;
 using Discord.Commands;
 using Kratos.Preconditions;
 using Kratos.Services;
+using Kratos.Data;
 using Humanizer;
 
 namespace Kratos.Modules
@@ -19,6 +21,7 @@ namespace Kratos.Modules
     {
         private DiscordSocketClient _client;
         private AliasTrackingService _aliases;
+        private RecordService _records;
 
         [Command("user")]
         [Summary("Get information about a user")]
@@ -108,6 +111,126 @@ namespace Kratos.Modules
                 });
             }
             await ReplyAsync("", embed: response);
+        }
+
+        [Command("records")]
+        [Summary("Get records for a user")]
+        [RequireCustomPermission("info.records")]
+        public async Task Records([Summary("The type of records to get (mutes, temps, permas)")] string type,
+                                  [Summary("Target user")] SocketGuildUser user)
+        {
+            using (var context = new RecordContext())
+            {
+                await context.Database.EnsureCreatedAsync();
+
+                var mutes = context.Mutes.Where(m => m.SubjectId == user.Id);
+                var temps = context.TempBans.Where(t => t.SubjectId == user.Id);
+                var permas = context.PermaBans.Where(p => p.SubjectId == user.Id);
+
+                var response = new StringBuilder("\n");
+                switch (type.ToLower())
+                {
+                    case "mutes":
+                        foreach (var m in mutes)
+                            response.AppendLine($"**({m.Key}) {m.Timestamp.ToString("mm/dd/yy hh:mm:ss UTC")}:** {m.Reason}");
+                        break;                    
+                    case "temps":                 
+                        foreach (var t in temps)  
+                            response.AppendLine($"**({t.Key}) {t.Timestamp.ToString("mm/dd/yy hh:mm:ss UTC")}:** {t.Reason}");
+                        break;                    
+                    case "permas":                
+                        foreach (var p in permas) 
+                            response.AppendLine($"**({p.Key}) {p.Timestamp.ToString("mm/dd/yy hh:mm:ss UTC")}:** {p.Reason}");
+                        break;
+                    default:
+                        await ReplyAsync(":x: Invalid type.");
+                        return;
+                }
+                if (response.Length > 2000)
+                {
+                    await ReplyAsync(":x: Too many records! The message is over 2000 characters.");
+                    return;
+                }
+                await ReplyAsync(response.ToString());
+            }
+        }
+
+        [Command("records")]
+        [Summary("Get info for a specific record")]
+        [RequireCustomPermission("info.records")]
+        public async Task Records([Summary("Record type (mutes. temps, perms)")] string type,
+                                  [Summary("Record key")] int key)
+        {
+            using (var context = new RecordContext())
+            {
+                await context.Database.EnsureCreatedAsync();
+                var response = new StringBuilder("\n");
+                switch (type.ToLower())
+                {
+                    case "mutes":
+                        var mute = await context.Mutes.FirstOrDefaultAsync(m => m.Key == key);
+                        if (mute == null)
+                        {
+                            await ReplyAsync(":x: Record not found.");
+                            return;
+                        }
+                        var moderator = await Context.Guild.GetUserAsync(mute.ModeratorId);
+                        var subject = await Context.Guild.GetUserAsync(mute.SubjectId);
+                        response.AppendLine("**Subject**");
+                        response.AppendLine($"{subject.Username}#{subject.Discriminator} ({subject.Id})");
+                        response.AppendLine("**Moderator**");
+                        response.AppendLine($"{moderator.Username}#{moderator.Discriminator} ({moderator.Id})");
+                        response.AppendLine("**Timestamp**");
+                        response.AppendLine(mute.Timestamp.ToString("dd/MM/yy hh:mm:ss UTC"));
+                        response.AppendLine("**Expiration Date/Time**");
+                        response.AppendLine(mute.UnmuteAt.ToString("dd/MM/yy hh:mm:ss UTC"));
+                        response.AppendLine("**Reason**");
+                        response.AppendLine(mute.Reason);
+                        break;
+                    case "temps":
+                        var temp = await context.TempBans.FirstOrDefaultAsync(t => t.Key == key);
+                        if (temp == null)
+                        {
+                            await ReplyAsync(":x: Record not found.");
+                            return;
+                        }
+                        moderator = await Context.Guild.GetUserAsync(temp.ModeratorId);
+                        subject = await Context.Guild.GetUserAsync(temp.SubjectId);
+                        response.AppendLine("**Subject**");
+                        response.AppendLine($"{subject.Username}#{subject.Discriminator} ({subject.Id})");
+                        response.AppendLine("**Moderator**");
+                        response.AppendLine($"{moderator.Username}#{moderator.Discriminator} ({moderator.Id})");
+                        response.AppendLine("**Timestamp**");
+                        response.AppendLine(temp.Timestamp.ToString("dd/MM/yy hh:mm:ss UTC"));
+                        response.AppendLine("**Expiration Date/Time**");
+                        response.AppendLine(temp.UnbanAt.ToString("dd/MM/yy hh:mm:ss UTC"));
+                        response.AppendLine("**Reason**");
+                        response.AppendLine(temp.Reason);
+                        break;
+                    case "perms":
+                        var perm = await context.PermaBans.FirstOrDefaultAsync(p => p.Key == key);
+                        if (perm == null)
+                        {
+                            await ReplyAsync(":x: Record not found.");
+                            return;
+                        }
+                        moderator = await Context.Guild.GetUserAsync(perm.ModeratorId);
+                        subject = await Context.Guild.GetUserAsync(perm.SubjectId);
+                        response.AppendLine("**Subject**");
+                        response.AppendLine($"{subject.Username}#{subject.Discriminator} ({subject.Id})");
+                        response.AppendLine("**Moderator**");
+                        response.AppendLine($"{moderator.Username}#{moderator.Discriminator} ({moderator.Id})");
+                        response.AppendLine("**Timestamp**");
+                        response.AppendLine(perm.Timestamp.ToString("dd/MM/yy hh:mm:ss UTC"));
+                        response.AppendLine("**Reason**");
+                        response.AppendLine(perm.Reason);
+                        break;
+                    default:
+                        await ReplyAsync(":x: Invalid format.");
+                        return;
+                }
+                await ReplyAsync(response.ToString());
+            }
         }
 
         [Command("server")]
@@ -249,10 +372,11 @@ namespace Kratos.Modules
         public async Task Help() =>
             await ReplyAsync("https://github.com/MarkusGordathian/Kratos/wiki/Commands");
 
-        public InfoModule(DiscordSocketClient c, AliasTrackingService a)
+        public InfoModule(DiscordSocketClient c, AliasTrackingService a, RecordService r)
         {
             _client = c;
             _aliases = a;
+            _records = r;
         }
     }
 }
