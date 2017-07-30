@@ -7,6 +7,7 @@ using System.Text;
 using Newtonsoft.Json;
 using Discord;
 using Discord.WebSocket;
+using Humanizer;
 using Kratos.Configs;
 
 namespace Kratos.Services
@@ -228,7 +229,11 @@ namespace Kratos.Services
 
         private async Task _client_UserJoined(SocketGuildUser u)
         {
-            await LogServerMessageAsync($":new: **{u.Username}#{u.Discriminator} ({u.Id})** joined the server.");
+            var age = DateTime.UtcNow.Subtract(u.CreatedAt.UtcDateTime);
+            if (age < TimeSpan.FromHours(1))
+                await LogServerMessageAsync($":new: **{u.Username}#{u.Discriminator} ({u.Id})** joined the server. :bangbang: Account is *{age.Humanize(2)}* old.");
+            else
+                await LogServerMessageAsync($":new: **{u.Username}#{u.Discriminator} ({u.Id})** joined the server.");
         }
 
         private async Task _client_UserLeft(SocketGuildUser u)
