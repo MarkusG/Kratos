@@ -253,6 +253,11 @@ namespace Kratos.Modules
                                                                      .Replace("{r}", reason));
             }
 
+            var name = user.Nickname == null
+                ? user.Username
+                : $"{user.Username} (nickname: {user.Nickname})";
+            await _log.LogModMessageAsync($"**{author.Nickname ?? author.Username}** muted {name} for {time.Humanize(5)}. Reason: `{reason}`");
+
             var muteRole = Context.Guild.GetRole(_config.MuteRoleId);
             await user.AddRoleAsync(muteRole);
             var mute = await _records.AddMuteAsync(new Mute
