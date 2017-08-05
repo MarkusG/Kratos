@@ -64,19 +64,6 @@ namespace Kratos
                             break;
                     }
                 }
-                if (result.IsSuccess)
-                {
-                    var author = message.Author as SocketGuildUser;
-                    var logMessage = m.Content;
-                    foreach (var u in m.MentionedUsers.Cast<SocketGuildUser>())
-                    {
-                        logMessage = logMessage.Replace(u.Mention, $"@{u.Username}#{u.Discriminator}");
-                        var usernameMention = u.Mention.Remove(2, 1);
-                        logMessage = logMessage.Replace(usernameMention, $"@{u.Username}#{u.Discriminator}");
-                    }
-
-                    await _log.LogModMessageAsync($"**{author.Nickname ?? author.Username} ({author.Id})** executed a command:\n```{logMessage}```");
-                }
             }
         }
     }
