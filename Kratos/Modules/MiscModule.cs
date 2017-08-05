@@ -61,7 +61,7 @@ namespace Kratos.Modules
         }
 
         private static async Task UserJoined_Welcome(SocketGuildUser user) =>
-            await user.Guild.DefaultChannel.SendMessageAsync(_welcomeMessage.Replace("{u}", user.Username).Replace("{g}", user.Guild.Name));
+            await (await user.GetOrCreateDMChannelAsync()).SendMessageAsync(_welcomeMessage.Replace("{u}", user.Username).Replace("{g}", user.Guild.Name));
 
         public MiscModule(DiscordSocketClient client)
         {
