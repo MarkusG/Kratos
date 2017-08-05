@@ -39,7 +39,7 @@ namespace Kratos.Modules
                 await dmChannel.SendMessageAsync(":x: Tag not found.");
                 return;
             }
-            await dmChannel.SendMessageAsync($"{tag}: {entity.Value}");
+            await dmChannel.SendMessageAsync($"{entity.Value}");
             _service.DisposeContext();
         }
 
