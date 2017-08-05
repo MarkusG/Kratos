@@ -19,26 +19,27 @@ namespace Kratos.Modules
         [RequireCustomPermission("tag.view")]
         public async Task Tag([Summary("The tag's value")] string tag = null)
         {
+            var dmChannel = await Context.User.GetOrCreateDMChannelAsync();
             if (tag == null)
             {
                 var tags = (await _service.GetTagsAsync()).Select(x => x.Tag);
                 if (tags.Count() < 1)
                 {
-                    await ReplyAsync(":x: No tags found.");
+                    await dmChannel.SendMessageAsync(":x: No tags found.");
                     return;
                 }
                 var response = string.Join(", ", tags);
-                await ReplyAsync(response);
+                await dmChannel.SendMessageAsync(response);
                 _service.DisposeContext();
                 return;
             }
             var entity = await _service.GetTagAsync(tag, true);
             if (entity == null)
             {
-                await ReplyAsync(":x: Tag not found.");
+                await dmChannel.SendMessageAsync(":x: Tag not found.");
                 return;
             }
-            await ReplyAsync($"{tag}: {entity.Value}");
+            await dmChannel.SendMessageAsync($"{tag}: {entity.Value}");
             _service.DisposeContext();
         }
 
@@ -85,10 +86,11 @@ namespace Kratos.Modules
         [RequireCustomPermission("tag.view")]
         public async Task Info([Summary("The tag for which to get metadata")] string key)
         {
+            var dmChannel = await Context.User.GetOrCreateDMChannelAsync();
             var entity = await _service.GetTagAsync(key, false);
             if (entity == null)
             {
-                await ReplyAsync(":x: Tag not found.");
+                await dmChannel.SendMessageAsync(":x: Tag not found.");
                 return;
             }
             var response = new StringBuilder();
@@ -97,7 +99,7 @@ namespace Kratos.Modules
             var author = await Context.Guild.GetUserAsync(entity.CreatedBy);
             response.AppendLine($"Created by: {author.Username}#{author.Discriminator}");
             response.AppendLine($"Times invoked: {entity.TimesInvoked}");
-            await ReplyAsync(response.ToString());
+            await dmChannel.SendMessageAsync(response.ToString());
             _service.DisposeContext();
         }
 
