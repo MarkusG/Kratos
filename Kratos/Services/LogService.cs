@@ -205,7 +205,7 @@ namespace Kratos.Services
         #region Server Log Event Handlers
         private async Task _client_MessageUpdated(Cacheable<IMessage, ulong> b, SocketMessage a, ISocketMessageChannel channel)
         {
-            if (a.Id == _client.CurrentUser.Id) return;
+            if (a.Author.IsBot) return;
 
             var before = await b.GetOrDownloadAsync();
             if (before == null) return;
@@ -221,6 +221,7 @@ namespace Kratos.Services
         {
             var message = await m.GetOrDownloadAsync();
             if (message == null) return;
+            if (message.Author.IsBot) return;
             var author = message.Author as SocketGuildUser;
             if (author == null) return;
             await LogServerMessageAsync($"`{DateTime.UtcNow.ToString("[hh:mm:ss]")}` {(channel as SocketTextChannel).Mention} | **{author.Username}#{author.Discriminator} ({author.Id})** deleted their message:\n" +
