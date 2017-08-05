@@ -212,7 +212,7 @@ namespace Kratos.Services
             if (before.Content == a.Content) return;
             var author = a.Author as SocketGuildUser;
             if (author == null) return;
-            await LogServerMessageAsync($"**{author.Nickname ?? author.Username}#{author.Discriminator} ({author.Id})** edited their message in {(a.Channel as SocketTextChannel).Mention}:\n" +
+            await LogServerMessageAsync($"`{DateTime.UtcNow.ToString("[hh:mm:ss]")}` {(a.Channel as SocketTextChannel).Mention} | **{author.Username}#{author.Discriminator} ({author.Id})** edited their message:\n" +
                                         $"**Before:** {before.Content}\n" + 
                                         $"**After:** {a.Content}");
         }
@@ -223,7 +223,7 @@ namespace Kratos.Services
             if (message == null) return;
             var author = message.Author as SocketGuildUser;
             if (author == null) return;
-            await LogServerMessageAsync($"**{author.Nickname ?? author.Username}#{author.Discriminator} ({author.Id})**'s message was deleted in {(message.Channel as SocketTextChannel).Mention}:\n" +
+            await LogServerMessageAsync($"`{DateTime.UtcNow.ToString("[hh:mm:ss]")}` {(channel as SocketTextChannel).Mention} | **{author.Username}#{author.Discriminator} ({author.Id})** deleted their message:\n" +
                                         $"{message.Content}");
         }
 
@@ -231,21 +231,21 @@ namespace Kratos.Services
         {
             var age = DateTime.UtcNow.Subtract(u.CreatedAt.UtcDateTime);
             if (age < TimeSpan.FromHours(1))
-                await LogServerMessageAsync($":new: **{u.Username}#{u.Discriminator} ({u.Id})** joined the server. :bangbang: Account is *{age.Humanize(2)}* old.");
+                await LogServerMessageAsync($"`{DateTime.UtcNow.ToString("[hh:mm:ss]")}` :new: {$"__**{u.Username}#{u.Discriminator} ({u.Id})**__ joined the server.".ToUpper()} :new: :bangbang: Account is *{age.Humanize(2)}* old.");
             else
-                await LogServerMessageAsync($":new: **{u.Username}#{u.Discriminator} ({u.Id})** joined the server.");
+                await LogServerMessageAsync($"`{DateTime.UtcNow.ToString("[hh:mm:ss]")}` :new: **{u.Username.ToUpper()}#{u.Discriminator} ({u.Id}) JOINED THE SERVER.** :new:");
         }
 
         private async Task _client_UserLeft(SocketGuildUser u)
         {
-            await LogServerMessageAsync($":wave: **{u.Username}#{u.Discriminator} ({u.Id})** left the server.");
+            await LogServerMessageAsync($"`{DateTime.UtcNow.ToString("[hh:mm:ss]")}` :wave: **{u.Username.ToUpper()}#{u.Discriminator} ({u.Id}) LEFT THE SERVER.** :wave:");
         }
 
         private async Task _client_UserUpdated_NameChange(SocketUser b, SocketUser a)
         {
             if (b.Username == a.Username) return;
 
-            await LogServerMessageAsync($"ℹ **{b.Username}#{b.Discriminator} ({b.Id})** changed their username to {a.Username}");
+            await LogServerMessageAsync($"`{DateTime.UtcNow.ToString("[hh:mm:ss]")}` :warning: **{b.Username}#{b.Discriminator} ({b.Id})** changed their username `{b.Username}` -> `{a.Username}`");
         }
 
         private async Task _client_GuildMemberUpdated_NickChange(SocketGuildUser b, SocketGuildUser a)
@@ -253,31 +253,23 @@ namespace Kratos.Services
             if (b.Nickname == a.Nickname) return;
             if (a.Nickname == null)
             {
-                await LogServerMessageAsync($"ℹ **{b.Username}#{b.Discriminator} ({b.Nickname}) ({b.Id})** removed their nickname.");
+                await LogServerMessageAsync($"`{DateTime.UtcNow.ToString("[hh:mm:ss]")}` :warning: **{b.Username}#{b.Discriminator} ({b.Nickname}) ({b.Id})** removed their nickname.");
                 return;
             }
-            await LogServerMessageAsync($"ℹ **{b.Nickname ?? b.Username}#{b.Discriminator} ({b.Id})** changed their nickname to {a.Nickname}");
+            await LogServerMessageAsync($"`{DateTime.UtcNow.ToString("[hh:mm:ss]")}` :warning: **{b.Nickname ?? b.Username}#{b.Discriminator} ({b.Id})** changed their nickname `{b.Nickname}` -> `{a.Nickname}`");
         }
 
         private async Task _client_GuildMemberUpdated_RoleChange(SocketGuildUser b, SocketGuildUser a)
         {
-            if (b.Roles == a.Roles) return;
-            var guild = (_client.GetChannel(ServerLogChannelId) as SocketGuildChannel).Guild;
-            if (b.Roles.Count() > a.Roles.Count())
-            {
-                var role = b.Roles.Except(a.Roles).FirstOrDefault();
-                await LogServerMessageAsync($"**{b.Nickname ?? b.Username}#{b.Discriminator} ({b.Id})** has lost role: {role.Name}");
-            }
-            else
-            {
-                var role = a.Roles.Except(b.Roles).FirstOrDefault();
-                await LogServerMessageAsync($"**{b.Nickname ?? b.Username}#{b.Discriminator} ({b.Id})** has gained role: {role.Name}");
-            }
+            if (b.Roles.Count() == a.Roles.Count()) return;
+            await LogServerMessageAsync($"`{DateTime.UtcNow.ToString("[hh:mm:ss]")}` :warning: **{b.Username}#{b.Discriminator} ({b.Id})'s roles have changed:**\n" +
+                                        $"**Before:** {string.Join(", ", b.Roles.Select(r => r.Name))}\n" +
+                                        $"**After:** {string.Join(", ", a.Roles.Select(r => r.Name))}");
         }
 
         private async Task _client_UserBanned(SocketUser u, SocketGuild g)
         {
-            await LogServerMessageAsync($":hammer: **{u.Username}#{u.Discriminator} ({u.Id})** was banned from the server.");
+            await LogServerMessageAsync($"`{DateTime.UtcNow.ToString("[hh:mm:ss]")}` :no_entry_sign: **{u.Username.ToUpper()}#{u.Discriminator} ({u.Id}) WAS BANNED FROM THE SERVER.** :no_entry_sign:");
         }
         #endregion
 
