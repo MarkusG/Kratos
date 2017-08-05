@@ -11,6 +11,7 @@ using Kratos.Services;
 using Kratos.Data;
 using Kratos.Results;
 using Kratos.Extensions;
+using Kratos.EntityFramework;
 
 namespace Kratos.Services
 {
@@ -31,14 +32,34 @@ namespace Kratos.Services
             var result = CheckViolation(m);
             if (!result.Positive) return;
 
+            // Ignore users with permission to bypass
             foreach (var r in author.Roles)
                 if (await _permissions.CheckPermissionsAsync(r.Id, "automod.bypass")) return;
 
             await m.DeleteAsync();
+
+            // Mute user and set timer to unmute
             var config = _guilds.GetOrCreate(author.Guild.Id);
             var muteRole = author.Guild.GetRole(config.MuteRoleId);
             await author.AddRoleAsync(muteRole);
             var timer = new Timer(Unmute, author, result.Filter.MuteTime, TimeSpan.FromMilliseconds(-1));
+
+            // Add mute to records
+            using (var context = new KratosContext())
+            {
+                await context.Database.EnsureCreatedAsync();
+                await context.MuteRecords.AddAsync(new MuteRecord
+                {
+                    GuildId = author.Guild.Id,
+                    SubjectId = author.Id,
+                    ModeratorId = 0,
+                    Timestamp = DateTime.Now,
+                    Expiration = DateTime.UtcNow + result.Filter.MuteTime,
+                    IsActive = true,
+                    Reason = "Word filter violation"
+                });
+                await context.SaveChangesAsync();
+            }
 
             var privateMessage = new StringBuilder()
                 .AppendLine($"You've been muted for {result.Filter.MuteTime.Humanize(5)} for violating the word filter in {author.Guild.Name}:")
