@@ -47,6 +47,8 @@ namespace Kratos.Services
                         : $"{user.Username} (nickname: {user.Nickname})";
                     await _log.LogModMessageAsync($":alarm_clock: **{name}#{user.Discriminator} ({m.SubjectId})**'s mute from {m.Timestamp} has expired.");
                     await _records.DeactivateMuteAsync(m.Key);
+                    var dmChannel = await user.GetOrCreateDMChannelAsync();
+                    await dmChannel.SendMessageAsync($"Your mute in {user.Guild.Name} has expired.");
                     mutesToRemove.Add(m);
                 }
                 foreach (var m in mutesToRemove)
