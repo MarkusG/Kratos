@@ -15,6 +15,8 @@ namespace Kratos.EntityFramework
 
         public DbSet<TemporaryBanRecord> TemporaryBanRecords { get; set; }
 
+        public DbSet<TagValue> Tags { get; set; }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) =>
             base.OnConfiguring(optionsBuilder.UseSqlite($"Data Source={Program.GetOriginalDirectory() + "Kratos.sqlite"};"));
     }
