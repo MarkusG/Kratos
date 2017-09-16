@@ -57,10 +57,10 @@ namespace Kratos
                             Console.WriteLine(exResult.Exception);
                             break;
                         case PreconditionResult preResult:
-                            await m.Channel.SendMessageAsync($":x: {preResult.ErrorReason}");
+                            await (await m.Author.GetOrCreateDMChannelAsync()).SendMessageAsync($":x: {preResult.ErrorReason}");
                             break;
                         default:
-                            await m.Channel.SendMessageAsync(result.ErrorReason);
+                            await (await m.Author.GetOrCreateDMChannelAsync()).SendMessageAsync(result.ErrorReason);
                             break;
                     }
                 }
