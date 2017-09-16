@@ -333,6 +333,7 @@ namespace Kratos.Modules
 
         [Command("ping")]
         [Summary("Returns \"Pong!\" and the bot's latency to Discord")]
+        [RequireCustomPermission("info.ping")]
         public async Task Ping()
         {
             await ReplyAsync($"Pong! My latency is currently {_client.Latency}ms.");
@@ -340,6 +341,7 @@ namespace Kratos.Modules
 
         [Command("bot")]
         [Summary("Returns general information about the bot")]
+        [RequireCustomPermission("info.bot")]
         public async Task Info()
         {
             var startTime = Process.GetCurrentProcess().StartTime;
@@ -358,6 +360,7 @@ namespace Kratos.Modules
 
         [Command("roles")]
         [Summary("Get role information for all roles on the server")]
+        [RequireCustomPermission("info.roles")]
         public async Task Roles()
         {
             var response = new StringBuilder("**ROLES**:\n");
@@ -369,6 +372,7 @@ namespace Kratos.Modules
         }
 
         [Command("help"), Summary("Displays this help page")]
+        [RequireCustomPermission("info.help")]
         public async Task Help() =>
             await ReplyAsync("https://github.com/MarkusGordathian/Kratos/wiki/Commands");
 
