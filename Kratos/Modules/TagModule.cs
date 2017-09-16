@@ -83,7 +83,7 @@ namespace Kratos.Modules
 
         [Command("info"), Alias("?")]
         [Summary("Get metadata for a tag.")]
-        [RequireCustomPermission("tag.view")]
+        [RequireCustomPermission("tag.info")]
         public async Task Info([Summary("The tag for which to get metadata")] string key)
         {
             var dmChannel = await Context.User.GetOrCreateDMChannelAsync();
