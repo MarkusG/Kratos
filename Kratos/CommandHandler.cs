@@ -49,7 +49,7 @@ namespace Kratos
                 // Execute the command. (result does not indicate a return value, 
                 // rather an object stating if the command executed succesfully)
                 var result = await _commands.ExecuteAsync(context, argPos, _services);
-                if (!result.IsSuccess)
+                if (!result.IsSuccess && result.Error != CommandError.UnknownCommand)
                 {
                     switch (result)
                     {
