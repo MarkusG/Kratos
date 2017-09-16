@@ -371,11 +371,6 @@ namespace Kratos.Modules
             await ReplyAsync(response.ToString().Replace("@everyone", "everyonerole"));
         }
 
-        [Command("help"), Summary("Displays this help page")]
-        [RequireCustomPermission("info.help")]
-        public async Task Help() =>
-            await ReplyAsync("https://github.com/MarkusGordathian/Kratos/wiki/Commands");
-
         public InfoModule(DiscordSocketClient c, AliasTrackingService a, RecordService r)
         {
             _client = c;

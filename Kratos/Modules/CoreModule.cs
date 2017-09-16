@@ -181,6 +181,11 @@ namespace Kratos.Modules
             Environment.Exit(0);
         }
 
+        [Command("help"), Summary("Displays this help page")]
+        [RequireCustomPermission("core.help")]
+        public async Task Help() =>
+            await ReplyAsync("https://github.com/MarkusGordathian/Kratos/wiki/Commands");
+
         public CoreModule(DiscordSocketClient c, CommandService s, BlacklistService b, CoreConfig config)
         {
             _client = c;
