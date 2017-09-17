@@ -16,6 +16,7 @@ namespace Kratos.Modules
 
         [Command("choose")]
         [Summary("Randomly selects from a number of options")]
+        [RequireCustomPermission("misc.choose")]
         public async Task Choose([Summary("A list of choices delimited by vertical bars (ex. \"choice1 | choice2\")"), Remainder] string args)
         {
             var argsArray = args.Split(new string[] { " | " }, StringSplitOptions.RemoveEmptyEntries);
