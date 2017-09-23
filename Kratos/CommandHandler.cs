@@ -7,6 +7,7 @@ using Discord.WebSocket;
 using Discord.Commands;
 using Kratos.Services;
 using Kratos.Configuration;
+using Kratos.TypeReaders;
 
 namespace Kratos
 {
@@ -22,6 +23,7 @@ namespace Kratos
         {
             _commands.Log += _localLog.LogAsync;
             await _commands.AddModulesAsync(Assembly.GetEntryAssembly());
+            _commands.AddTypeReader<TimeSpanReader>(new TimeSpanReader());
             _client.MessageReceived += HandleCommandAsync;
         }
 

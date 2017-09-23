@@ -31,7 +31,7 @@ namespace Kratos.Services
             {
                 PermissionResult result;
                 await context.Database.EnsureCreatedAsync();
-                var pair = await context.Permissions.FirstOrDefaultAsync(p => p.Id == id);
+                var pair = await context.Permissions.FirstOrDefaultAsync(p => p.Key == id);
                 if (pair != null)
                 {
                     var permissions = pair.Permissions.Split(new string[] { ", " } , StringSplitOptions.RemoveEmptyEntries).ToList();
@@ -45,7 +45,7 @@ namespace Kratos.Services
                 {
                     await context.Permissions.AddAsync(new PermissionPair
                     {
-                        Id = id,
+                        Key = id,
                         Permissions = permission
                     });
                     result = PermissionResult.FromSuccess("Set created and permission added.");
@@ -92,7 +92,7 @@ namespace Kratos.Services
             {
                 PermissionResult result;
                 await context.Database.EnsureCreatedAsync();
-                var pair = await context.Permissions.FirstOrDefaultAsync(p => p.Id == id);
+                var pair = await context.Permissions.FirstOrDefaultAsync(p => p.Key == id);
                 if (pair != null)
                 {
                     var permissions = pair.Permissions.Split(new string[] { ", " }, StringSplitOptions.RemoveEmptyEntries);
@@ -106,7 +106,7 @@ namespace Kratos.Services
                 {
                     context.Permissions.Add(new PermissionPair
                     {
-                        Id = id,
+                        Key = id,
                         Permissions = string.Join(", ", addendPermissions)
                     });
                     result = PermissionResult.FromSuccess("Set created and permissions added.");
@@ -129,7 +129,7 @@ namespace Kratos.Services
                 PermissionResult result;
                 await context.Database.EnsureCreatedAsync();
 
-                var pair = await context.Permissions.FirstOrDefaultAsync(p => p.Id == id);
+                var pair = await context.Permissions.FirstOrDefaultAsync(p => p.Key == id);
                 if (pair == null)
                     return PermissionResult.FromWarning("No permissions held by the given role.");
 
@@ -157,7 +157,7 @@ namespace Kratos.Services
             {
                 PermissionResult result;
                 await context.Database.EnsureCreatedAsync();
-                var pair = await context.Permissions.FirstOrDefaultAsync(p => p.Id == id);
+                var pair = await context.Permissions.FirstOrDefaultAsync(p => p.Key == id);
                 if (pair == null)
                     return PermissionResult.FromWarning("No permissions held by the given role.");
 
@@ -215,7 +215,7 @@ namespace Kratos.Services
             using (var context = new KratosContext())
             {
                 await context.Database.EnsureCreatedAsync();
-                var pair = await context.Permissions.FirstOrDefaultAsync(p => p.Id == id);
+                var pair = await context.Permissions.FirstOrDefaultAsync(p => p.Key == id);
                 if (pair == null)
                     return null;
                 return pair.Permissions.Split(new string[] { ", " }, StringSplitOptions.None);
@@ -229,7 +229,7 @@ namespace Kratos.Services
             using (var context = new KratosContext())
             {
                 await context.Database.EnsureCreatedAsync();
-                var entry = await context.Permissions.FirstOrDefaultAsync(p => p.Id == id);
+                var entry = await context.Permissions.FirstOrDefaultAsync(p => p.Key == id);
                 if (entry == null)
                     return false;
                 var permissions = entry.Permissions.Split(new string[] { ", " }, StringSplitOptions.RemoveEmptyEntries);

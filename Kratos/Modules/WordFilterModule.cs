@@ -10,6 +10,7 @@ using Kratos.Preconditions;
 using Kratos.Services;
 using Kratos.Data;
 using Kratos.Results;
+using Kratos.TypeReaders;
 
 namespace Kratos.Modules
 {
@@ -105,7 +106,7 @@ namespace Kratos.Modules
         [Command("mutetime")]
         [Summary("Edit the mute time for the given filter")]
         [Permission("filter.manage")]
-        public async Task<RuntimeResult> MuteTimeAsync([Summary("Mute time (hh:mm:ss)")] TimeSpan time,
+        public async Task<RuntimeResult> MuteTimeAsync([Summary("Mute time"), OverrideTypeReader(typeof(TimeSpanReader))] TimeSpan time,
                                                        [Summary("Channel (leave blank to edit the mute time for the guild's filter")] SocketTextChannel channel = null)
         {
             WordFilter filter;
