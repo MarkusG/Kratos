@@ -1,4 +1,4 @@
-### This project has been abandoned and is no longer being maintained.
+### This project is no longer being maintained.
 
 # Kratos #
 Kratos is a bot built for ultimate customizability and control. Join the development and support Discord guild [here](https://discord.gg/VZHYnhY).
